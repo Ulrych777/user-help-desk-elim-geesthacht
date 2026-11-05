@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Formularfelder – Gestaltungsvorschlag</title>
+  <style>
+    :root { --ink:#081426; --muted:#3f4b5a; --deep:#0b2540; --bg:#eae5dd; --blue:#00458f; }
+    * { box-sizing:border-box; }
+    body { margin:0; font:16px/1.6 Arial,"Helvetica Neue",Helvetica,sans-serif; color:var(--ink); background:var(--bg); }
+    button,input,select,textarea { font:inherit; }
+    svg { width:22px; height:22px; flex:none; }
+    h1,h2,h3,p { margin-top:0; }
+    h1 { font-size:clamp(28px,4vw,40px); line-height:1.2; letter-spacing:-.035em; margin-bottom:12px; }
+    h2 { font-size:25px; line-height:1.3; letter-spacing:-.025em; margin-bottom:12px; }
+    h3 { font-size:19px; }
+    .wrap { width:min(1160px,calc(100% - 48px)); margin:0 auto; }
+    header { background:#fff; border-bottom:1px solid #d7dce0; padding:20px 0; }
+    header .wrap { display:flex; gap:16px; align-items:center; justify-content:space-between; }
+    header strong { font-size:19px; }
+    .muted { color:var(--muted); }
+    .small { font-size:13px; }
+    main { padding:32px 0 48px; }
+    .intro { padding:30px 34px; border-radius:18px; color:#fff; background:radial-gradient(ellipse at top right,#34526c,transparent 75%),var(--deep); box-shadow:0 6px 12px -4px #67553c38; margin-bottom:28px; }
+    .intro p { margin-bottom:0; color:#e1e8f1; max-width:720px; }
+    .search-examples { display:grid; grid-template-columns:1fr 1fr; gap:22px; margin-bottom:28px; }
+    .panel { min-width:0; padding:28px; border:1px solid #f9f4ec; border-radius:17px; background:linear-gradient(145deg,#fbf8f1,#f6f1e8 75%,#f1eade); box-shadow:0 1px 2px #77654c2b,0 6px 10px -3px #67553c38,0 14px 22px -9px #59462e42; }
+    .home-search-panel { padding:28px; border-radius:17px; color:#fff; background:radial-gradient(ellipse at top right,#34526c,transparent 75%),var(--deep); box-shadow:0 6px 12px -4px #67553c38; }
+    .home-search-panel .searchbox { border:3px solid #9ab4cc; border-radius:16px; padding:0 16px; box-shadow:0 4px 0 #07192d66,0 12px 28px #0003; }
+    .home-search-panel p { color:#e1e8f1; font-size:14px; }
+    .searchbox { display:flex; align-items:center; gap:12px; padding:0 14px; }
+    .searchbox input { width:100%; min-width:0; border:0; background:transparent; padding:15px 0; color:var(--ink); }
+    .searchbox svg { color:#294356; }
+    .form-layout { display:grid; grid-template-columns:minmax(0,1fr) 290px; gap:28px; align-items:start; }
+    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+    .field { display:block; min-width:0; margin-bottom:22px; }
+    .field > span:not(.help),.control-label { display:block; font-size:14px; font-weight:650; margin-bottom:7px; }
+    .help { display:block; font-size:13px; line-height:1.45; color:var(--muted); margin-top:7px; }
+    .check { display:flex; align-items:start; font-size:14px; margin:10px 0; }
+    fieldset { min-width:0; padding:18px 20px; margin:0 0 22px; border:1px solid #d9cebe; border-radius:13px; background:#ffffff40; }
+    legend { padding:0 8px; font-size:14px; font-weight:650; }
+    .aside { padding:26px; border-radius:17px; background:radial-gradient(ellipse at top right,#34526c,transparent 75%),var(--deep); color:#e1e8f1; font-size:15px; box-shadow:0 6px 12px -4px #67553c38; }
+    .aside h3 { color:white; font-size:21px; }
+    .aside p:last-child { margin-bottom:0; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; min-height:46px; padding:11px 18px; border:1px solid transparent; border-radius:10px; color:white; background:linear-gradient(180deg,#164973,#0b3157); font-size:15px; font-weight:600; cursor:pointer; box-shadow:0 2px 0 #05213c26,0 4px 8px #0b25400f; }
+    .btn:hover { background:var(--deep); }
+    .notice { margin:16px 0 0; font-size:14px; color:#215436; }
+    .notice:empty { display:none; }
+    footer { padding:20px 0; background:#fff; border-top:1px solid #d7dce0; color:var(--muted); font-size:13px; }
+    @media (max-width:800px) { .form-layout { grid-template-columns:1fr; } .aside { max-width:none; } }
+    @media (max-width:620px) {
+      .wrap { width:calc(100% - 32px); } header .wrap { align-items:start; flex-direction:column; gap:2px; }
+      .search-examples,.form-grid { grid-template-columns:1fr; } .panel,.home-search-panel { padding:22px; }
+      .intro { padding:26px 24px; } fieldset { padding:16px; } .field { margin-bottom:20px; }
+    }
+  </style>
+  <!-- BEGIN FORM CONTROL STYLES -->
+  <style>
+/* Gemeinsame Gestaltung der Portal-Eingaben. Nach den bisherigen Styles laden. */
+:root {
+  --control-bg: #fdfaf4;
+  --control-border: #897e6e;
+  --control-hover: #666e70;
+  --control-focus: #1b4d70;
+  --control-halo: #1b4d7021;
+  --control-shadow: inset 0 2px 4px #66543a0c, 0 1px 0 #ffffffb3;
+}
+
+:focus-visible {
+  outline: 2px solid var(--control-focus);
+  outline-offset: 3px;
+}
+
+.field > span:not(.help),
+.field > label,
+.control-label {
+  color: #19364d;
+}
+.field input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+textarea,
+select {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  border: 1px solid var(--control-border);
+  border-radius: 13px;
+  background-color: var(--control-bg);
+  color: var(--ink, #081426);
+  padding: 12px 14px;
+  box-shadow: var(--control-shadow);
+  transition:
+    border-color 0.16s,
+    background-color 0.16s,
+    box-shadow 0.16s;
+}
+
+.field
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--control-focus);
+  background-color: #fffdf9;
+  box-shadow:
+    var(--control-shadow),
+    0 0 0 3px var(--control-halo);
+}
+
+.field
+  input:not([type="checkbox"]):not([type="radio"]):not(
+    [type="file"]
+  ):focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--control-focus);
+  outline-offset: 0;
+  box-shadow: var(--control-shadow);
+}
+
+.field
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):disabled,
+textarea:disabled,
+select:disabled {
+  background-color: #eee9e0;
+  border-color: #bfb5a5;
+  color: #716c65;
+  box-shadow: none;
+  cursor: default;
+}
+
+textarea {
+  min-height: 124px;
+  resize: vertical;
+}
+input::placeholder,
+textarea::placeholder {
+  color: #626967;
+  opacity: 1;
+}
+
+select {
+  appearance: none;
+  padding-right: 46px;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%231b4d70' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m7 10 5 5 5-5'/%3E%3C/svg%3E");
+  background-position: right 14px center;
+  background-repeat: no-repeat;
+  background-size: 20px;
+}
+select option {
+  background: #fdfaf4;
+  color: #081426;
+}
+input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0.75;
+  cursor: pointer;
+}
+
+.searchbox,
+main[data-view="area"] .searchbox {
+  border: 1px solid var(--control-border);
+  border-radius: 13px;
+  background-color: var(--control-bg);
+  box-shadow: var(--control-shadow);
+  transition:
+    border-color 0.16s,
+    background-color 0.16s,
+    box-shadow 0.16s;
+}
+.searchbox input:focus,
+.searchbox input:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+.searchbox:focus-within,
+main[data-view="area"] .searchbox:focus-within {
+  outline: none;
+  border-color: var(--control-focus);
+  background-color: #fffdf9;
+  box-shadow:
+    var(--control-shadow),
+    0 0 0 3px var(--control-halo);
+}
+.searchbox:has(input:focus-visible),
+main[data-view="area"] .searchbox:has(input:focus-visible) {
+  outline: 2px solid var(--control-focus);
+  outline-offset: 0;
+  box-shadow: var(--control-shadow);
+}
+.home-search-panel .searchbox:focus-within {
+  outline: none;
+  border-color: #bdd1df;
+  box-shadow:
+    0 0 0 3px #bdd1df40,
+    0 4px 0 #07192d66,
+    0 12px 28px #0003;
+}
+.home-search-panel .searchbox:has(input:focus-visible) {
+  outline: 2px solid #bdd1df;
+  outline-offset: 0;
+  border-color: #bdd1df;
+  box-shadow:
+    0 4px 0 #07192d66,
+    0 12px 28px #0003;
+}
+
+input[type="checkbox"] {
+  appearance: none;
+  display: inline-grid;
+  place-content: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  margin: 1px 0 0;
+  padding: 0;
+  border: 1px solid var(--control-border);
+  border-radius: 6px;
+  background-color: var(--control-bg);
+  color: white;
+  box-shadow: var(--control-shadow);
+  cursor: pointer;
+  vertical-align: middle;
+  transition:
+    border-color 0.16s,
+    background-color 0.16s,
+    box-shadow 0.16s;
+}
+input[type="checkbox"]::before {
+  content: "";
+  width: 11px;
+  height: 6px;
+  border-left: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-1px) rotate(-45deg);
+  visibility: hidden;
+}
+input[type="checkbox"]:checked {
+  background-color: var(--deep, #0b2540);
+  border-color: var(--deep, #0b2540);
+  box-shadow:
+    inset 0 1px 1px #ffffff24,
+    0 1px 2px #0b25401a;
+}
+input[type="checkbox"]:checked::before {
+  visibility: visible;
+}
+input[type="checkbox"]:indeterminate {
+  background-color: var(--deep, #0b2540);
+  border-color: var(--deep, #0b2540);
+}
+input[type="checkbox"]:indeterminate::before {
+  width: 10px;
+  height: 0;
+  border-left: 0;
+  border-bottom: 2px solid currentColor;
+  transform: none;
+  visibility: visible;
+}
+input[type="checkbox"]:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--control-halo);
+}
+input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--control-focus);
+  outline-offset: 3px;
+  box-shadow: none;
+}
+input[type="checkbox"]:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.check {
+  gap: 11px;
+  min-height: 32px;
+  padding: 4px 0;
+  line-height: 1.55;
+  cursor: pointer;
+}
+.check input {
+  margin: 0;
+}
+
+input[type="file"]::file-selector-button {
+  border: 1px solid var(--control-border);
+  border-radius: 9px;
+  color: var(--deep, #0b2540);
+  background: var(--control-bg);
+  box-shadow: var(--control-shadow);
+}
+input[type="file"]:focus-visible {
+  outline: 2px solid var(--control-focus);
+  outline-offset: 3px;
+  border-radius: 9px;
+}
+
+@media (hover: hover) {
+  .field
+    input:not([type="checkbox"]):not([type="radio"]):not(
+      [type="file"]
+    ):hover:not(:focus):not(:disabled),
+  textarea:hover:not(:focus):not(:disabled),
+  select:hover:not(:focus):not(:disabled),
+  input[type="checkbox"]:hover:not(:focus):not(:disabled) {
+    border-color: var(--control-hover);
+  }
+  .searchbox:hover:not(:focus-within),
+  main[data-view="area"] .searchbox:hover:not(:focus-within) {
+    border-color: var(--control-hover);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  input,
+  textarea,
+  select,
+  .searchbox {
+    transition: none !important;
+  }
+}
+@media (forced-colors: active) {
+  input[type="checkbox"] {
+    appearance: auto;
+    box-shadow: none;
+  }
+  input[type="checkbox"]::before {
+    content: none;
+  }
+  select {
+    appearance: auto;
+    background-image: none;
+  }
+  :focus-visible {
+    outline: 2px solid Highlight;
+  }
+  .searchbox:has(input:focus-visible),
+  main[data-view="area"] .searchbox:has(input:focus-visible),
+  .home-search-panel .searchbox:has(input:focus-visible) {
+    outline: 2px solid Highlight;
+  }
+}
+
+  </style>
+  <!-- END FORM CONTROL STYLES -->
+</head>
+<body>
+  <header><div class="wrap"><strong>Formularfelder</strong><span class="small muted">Gestaltungsvorschlag · Elim Kirche Serviceportal</span></div></header>
+  <main class="wrap">
+    <section class="intro"><h1>Ein stimmiges Design für deine Eingaben.</h1><p>Warme Flächen, sanfte Innenkanten und dunkelblaue Akzente. Klicke in die Felder oder navigiere mit der Tab-Taste, um die Fokusmarkierung auszuprobieren.</p></section>
+    <section class="search-examples" aria-label="Suchfelder ausprobieren">
+      <div class="home-search-panel"><h2>Wobei brauchst du Unterstützung?</h2><p>Beispiel für das Suchfeld auf der Startseite.</p><label class="control-label" for="portal-search" style="color:#e1e8f1">Anliegen suchen</label><div class="searchbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/></svg><input id="portal-search" type="search" placeholder="Zum Beispiel: WLAN oder Heizung"></div></div>
+      <div class="panel"><h2>Im Bereich suchen</h2><p class="small muted">Beispiel für das Suchfeld auf einer Bereichsseite.</p><label class="control-label" for="area-search">Anliegen suchen</label><div class="searchbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/></svg><input id="area-search" type="search" placeholder="Suchbegriff eingeben …"></div></div>
+    </section>
+    <div class="form-layout">
+      <form class="panel" id="preview-form">
+        <h2>Deine Angaben</h2><p class="small muted">Diese Vorschau verschickt keine E-Mails. Felder mit * sind Pflichtfelder.</p>
+        <div class="form-grid">
+          <label class="field"><span>Dein Name *</span><input id="request-name" name="name" required autocomplete="name" placeholder="Vor- und Nachname"></label>
+          <label class="field"><span>Deine E-Mail-Adresse *</span><input id="request-email" name="email" type="email" required autocomplete="email" placeholder="name@beispiel.de"></label>
+        </div>
+        <label class="field"><span>Betreff *</span><input id="request-subject" name="subject" required value="Schaden am Gebäude melden"></label>
+        <label class="field"><span>Welcher Bereich ist betroffen? *</span><select id="custom-art" name="art" required><option value="">Bitte auswählen</option><option>Raum oder Ausstattung</option><option>Heizung oder Sanitär</option><option>Elektrik oder Beleuchtung</option><option>Sonstiges</option></select></label>
+        <label class="field"><span>Deine Nachricht *</span><textarea id="request-description" name="message" required placeholder="Was ist passiert und wo tritt das Problem auf?"></textarea><span class="help">Bitte keine Passwörter oder vertraulichen Informationen eintragen.</span></label>
+        <fieldset><legend>Was ist betroffen?</legend><label class="check"><input id="check-room" name="topic" type="checkbox" value="room" checked> Räume und Ausstattung</label><label class="check"><input id="check-outside" name="topic" type="checkbox" value="outside"> Außenanlagen</label><label class="check"><input id="check-other" name="topic" type="checkbox" value="other"> Etwas anderes</label></fieldset>
+        <button class="btn" type="submit">Absenden simulieren</button><p class="notice" id="form-notice" role="status"></p>
+      </form>
+      <aside class="aside"><h3>Dein Kontakt zum Team</h3><p>Im fertigen Portal erreicht dein Anliegen das zuständige Team. Antworten erhältst du per E-Mail.</p><p>Hier kannst du ausschließlich die neue Gestaltung der Eingabefelder ausprobieren.</p></aside>
+    </div>
+  </main>
+  <footer><div class="wrap">Separate Designvorschau. Der bisherige Portalentwurf ist in dieser Cloud-Umgebung nicht enthalten.</div></footer>
+  <script>document.getElementById('preview-form').addEventListener('submit',event=>{event.preventDefault();document.getElementById('form-notice').textContent='Vorschau abgeschlossen. Es wurde keine E-Mail verschickt.';});</script>
+</body>
+</html>

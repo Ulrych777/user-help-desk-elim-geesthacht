@@ -1,0 +1,281 @@
+/* Gemeinsame Gestaltung der Portal-Eingaben. Nach den bisherigen Styles laden. */
+:root {
+  --control-bg: #fdfaf4;
+  --control-border: #897e6e;
+  --control-hover: #666e70;
+  --control-focus: #1b4d70;
+  --control-halo: #1b4d7021;
+  --control-shadow: inset 0 2px 4px #66543a0c, 0 1px 0 #ffffffb3;
+}
+
+:focus-visible {
+  outline: 2px solid var(--control-focus);
+  outline-offset: 3px;
+}
+
+.field > span:not(.help),
+.field > label,
+.control-label {
+  color: #19364d;
+}
+.field input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+textarea,
+select {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  border: 1px solid var(--control-border);
+  border-radius: 13px;
+  background-color: var(--control-bg);
+  color: var(--ink, #081426);
+  padding: 12px 14px;
+  box-shadow: var(--control-shadow);
+  transition:
+    border-color 0.16s,
+    background-color 0.16s,
+    box-shadow 0.16s;
+}
+
+.field
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--control-focus);
+  background-color: #fffdf9;
+  box-shadow:
+    var(--control-shadow),
+    0 0 0 3px var(--control-halo);
+}
+
+.field
+  input:not([type="checkbox"]):not([type="radio"]):not(
+    [type="file"]
+  ):focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--control-focus);
+  outline-offset: 0;
+  box-shadow: var(--control-shadow);
+}
+
+.field
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):disabled,
+textarea:disabled,
+select:disabled {
+  background-color: #eee9e0;
+  border-color: #bfb5a5;
+  color: #716c65;
+  box-shadow: none;
+  cursor: default;
+}
+
+textarea {
+  min-height: 124px;
+  resize: vertical;
+}
+input::placeholder,
+textarea::placeholder {
+  color: #626967;
+  opacity: 1;
+}
+
+select {
+  appearance: none;
+  padding-right: 46px;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%231b4d70' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m7 10 5 5 5-5'/%3E%3C/svg%3E");
+  background-position: right 14px center;
+  background-repeat: no-repeat;
+  background-size: 20px;
+}
+select option {
+  background: #fdfaf4;
+  color: #081426;
+}
+input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0.75;
+  cursor: pointer;
+}
+
+.searchbox,
+main[data-view="area"] .searchbox {
+  border: 1px solid var(--control-border);
+  border-radius: 13px;
+  background-color: var(--control-bg);
+  box-shadow: var(--control-shadow);
+  transition:
+    border-color 0.16s,
+    background-color 0.16s,
+    box-shadow 0.16s;
+}
+.searchbox input:focus,
+.searchbox input:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+.searchbox:focus-within,
+main[data-view="area"] .searchbox:focus-within {
+  outline: none;
+  border-color: var(--control-focus);
+  background-color: #fffdf9;
+  box-shadow:
+    var(--control-shadow),
+    0 0 0 3px var(--control-halo);
+}
+.searchbox:has(input:focus-visible),
+main[data-view="area"] .searchbox:has(input:focus-visible) {
+  outline: 2px solid var(--control-focus);
+  outline-offset: 0;
+  box-shadow: var(--control-shadow);
+}
+.home-search-panel .searchbox:focus-within {
+  outline: none;
+  border-color: #bdd1df;
+  box-shadow:
+    0 0 0 3px #bdd1df40,
+    0 4px 0 #07192d66,
+    0 12px 28px #0003;
+}
+.home-search-panel .searchbox:has(input:focus-visible) {
+  outline: 2px solid #bdd1df;
+  outline-offset: 0;
+  border-color: #bdd1df;
+  box-shadow:
+    0 4px 0 #07192d66,
+    0 12px 28px #0003;
+}
+
+input[type="checkbox"] {
+  appearance: none;
+  display: inline-grid;
+  place-content: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  margin: 1px 0 0;
+  padding: 0;
+  border: 1px solid var(--control-border);
+  border-radius: 6px;
+  background-color: var(--control-bg);
+  color: white;
+  box-shadow: var(--control-shadow);
+  cursor: pointer;
+  vertical-align: middle;
+  transition:
+    border-color 0.16s,
+    background-color 0.16s,
+    box-shadow 0.16s;
+}
+input[type="checkbox"]::before {
+  content: "";
+  width: 11px;
+  height: 6px;
+  border-left: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-1px) rotate(-45deg);
+  visibility: hidden;
+}
+input[type="checkbox"]:checked {
+  background-color: var(--deep, #0b2540);
+  border-color: var(--deep, #0b2540);
+  box-shadow:
+    inset 0 1px 1px #ffffff24,
+    0 1px 2px #0b25401a;
+}
+input[type="checkbox"]:checked::before {
+  visibility: visible;
+}
+input[type="checkbox"]:indeterminate {
+  background-color: var(--deep, #0b2540);
+  border-color: var(--deep, #0b2540);
+}
+input[type="checkbox"]:indeterminate::before {
+  width: 10px;
+  height: 0;
+  border-left: 0;
+  border-bottom: 2px solid currentColor;
+  transform: none;
+  visibility: visible;
+}
+input[type="checkbox"]:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--control-halo);
+}
+input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--control-focus);
+  outline-offset: 3px;
+  box-shadow: none;
+}
+input[type="checkbox"]:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.check {
+  gap: 11px;
+  min-height: 32px;
+  padding: 4px 0;
+  line-height: 1.55;
+  cursor: pointer;
+}
+.check input {
+  margin: 0;
+}
+
+input[type="file"]::file-selector-button {
+  border: 1px solid var(--control-border);
+  border-radius: 9px;
+  color: var(--deep, #0b2540);
+  background: var(--control-bg);
+  box-shadow: var(--control-shadow);
+}
+input[type="file"]:focus-visible {
+  outline: 2px solid var(--control-focus);
+  outline-offset: 3px;
+  border-radius: 9px;
+}
+
+@media (hover: hover) {
+  .field
+    input:not([type="checkbox"]):not([type="radio"]):not(
+      [type="file"]
+    ):hover:not(:focus):not(:disabled),
+  textarea:hover:not(:focus):not(:disabled),
+  select:hover:not(:focus):not(:disabled),
+  input[type="checkbox"]:hover:not(:focus):not(:disabled) {
+    border-color: var(--control-hover);
+  }
+  .searchbox:hover:not(:focus-within),
+  main[data-view="area"] .searchbox:hover:not(:focus-within) {
+    border-color: var(--control-hover);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  input,
+  textarea,
+  select,
+  .searchbox {
+    transition: none !important;
+  }
+}
+@media (forced-colors: active) {
+  input[type="checkbox"] {
+    appearance: auto;
+    box-shadow: none;
+  }
+  input[type="checkbox"]::before {
+    content: none;
+  }
+  select {
+    appearance: auto;
+    background-image: none;
+  }
+  :focus-visible {
+    outline: 2px solid Highlight;
+  }
+  .searchbox:has(input:focus-visible),
+  main[data-view="area"] .searchbox:has(input:focus-visible),
+  .home-search-panel .searchbox:has(input:focus-visible) {
+    outline: 2px solid Highlight;
+  }
+}
