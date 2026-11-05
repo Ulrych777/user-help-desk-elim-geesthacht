@@ -13,6 +13,7 @@ const filenames = [
   "bereich-haus.webp",
   "bereich-finanzen.webp",
   "service-eingang.webp",
+  "hintergrund-pflanze.webp",
   "wlan-einstellungen.svg",
 ];
 const images = Object.fromEntries(

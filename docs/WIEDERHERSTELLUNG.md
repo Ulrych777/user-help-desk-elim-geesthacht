@@ -41,7 +41,7 @@ Das bisherige Ergebnis war ein Oberflächenprototyp. E-Mail-Versand, geschützte
 
 ## Neuer Prototyp und Prüfung
 
-`prototype/index.html` ist eine neu erstellte, eigenständige Rekonstruktion mit den oben genannten Funktionen. Die originale Wort-Bild-Marke konnte aus dem Upload gerettet werden. Die vier übrigen Illustrationen wurden neu erzeugt; eine bytegenaue Wiederherstellung der alten Gestaltung und Bilder ist damit nicht behauptet. Eine separate dekorative Pflanze im Hintergrund der Bereichsliste ist in der Rekonstruktion nicht enthalten.
+`prototype/index.html` ist eine neu erstellte, eigenständige Rekonstruktion mit den oben genannten Funktionen. Die originale Wort-Bild-Marke konnte aus dem Upload gerettet werden. Die übrigen Illustrationen wurden nach erneuter Bereitstellung des Mockups E daran angeglichen; eine bytegenaue Wiederherstellung der alten Bilder ist damit nicht behauptet. Die dekorative Pflanze ist wieder als weich unscharfer, angeschnittener Hintergrund der Bereichsliste enthalten. Eine [Browseraufnahme](design/startseite-mockup-abgleich.png) hält diesen Stand fest.
 
 Die Browserprüfung in `scripts/check-prototype.cjs` deckt die Original-Logo-Prüfsumme, Startseite, Suchtreffer, Direktlinks, echte Zwischenablage, Dialogfokus, Formulareingaben und Anfrageanhänge ab. Weiter geprüft wurden Bereichsbilder einschließlich Veröffentlichungspflicht und eigenem Upload, Anleitungstext und Bilder, Bildbeschreibung, Wechsel der Anliegenart, Mehrfachauswahl, deaktivierte Inhalte, eine lange Liste mit acht Bereichen und alle Ansichten bei 768, 390 und 320 Pixeln Breite. Die Prüfungen waren erfolgreich.
 

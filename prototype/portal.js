@@ -24,6 +24,10 @@ const symbols = {
 const icon = (name) =>
   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${symbols[name] || symbols.info}</svg>`;
 const asset = (name) => images[name] || "";
+document.documentElement.style.setProperty(
+  "--area-decor",
+  `url("${asset("hintergrund-pflanze.webp")}")`,
+);
 document
   .querySelectorAll("img[data-asset]")
   .forEach((image) => (image.src = asset(image.dataset.asset)));
