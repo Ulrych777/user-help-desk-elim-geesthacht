@@ -254,38 +254,35 @@ const fs = require("node:fs"),
     pass(
       "Bereichssuche und Kategorien, Anleitung mit Bild und Kontaktfeldern, simulierter Versand und drei Uploadgrenzen.",
     );
-    await visit("admin/area/new");
-    const libraryDownloads = page.locator(
-      ".area-image-library a[download]",
+    const png = Buffer.from(
+      await page.evaluate(() => {
+        const c = document.createElement("canvas");
+        c.width = 320;
+        c.height = 200;
+        const ctx = c.getContext("2d");
+        ctx.fillStyle = "#eae5dd";
+        ctx.fillRect(20, 20, 280, 160);
+        return c.toDataURL("image/png").split(",")[1];
+      }),
+      "base64",
     );
-    assert.equal(await libraryDownloads.count(), 3);
-    assert.deepEqual(
-      await libraryDownloads.evaluateAll((links) =>
-        links.map((link) => ({
-          type: link.href.slice(0, 16),
-          filename: link.getAttribute("download"),
-        })),
-      ),
-      [
-        { type: "data:image/webp;", filename: "Elim-Bereich-IT.webp" },
-        {
-          type: "data:image/webp;",
-          filename: "Elim-Bereich-Haus-und-Hof.webp",
-        },
-        {
-          type: "data:image/webp;",
-          filename: "Elim-Bereich-Finanzbuchhaltung.webp",
-        },
-      ],
+    await visit("admin/area/it");
+    assert.equal(await page.locator("a[download]").count(), 1);
+    assert.equal(
+      await page.locator("#download-area-image").getAttribute("download"),
+      "Elim-Bereich-IT.webp",
     );
     const downloadPromise = page.waitForEvent("download");
-    await libraryDownloads.first().click();
+    await page.locator("#download-area-image").click();
     const downloadedImage = await downloadPromise;
     assert.equal(downloadedImage.suggestedFilename(), "Elim-Bereich-IT.webp");
     assert.equal(
       fs.readFileSync(await downloadedImage.path()).subarray(0, 4).toString(),
       "RIFF",
     );
+    await visit("admin/area/new");
+    assert.equal(await page.locator("a[download]").count(), 0);
+    assert.equal(await page.locator("#area-image-choice").count(), 0);
     await page.locator("#area-name").fill("Veranstaltungen");
     await page
       .locator("#area-description")
@@ -296,7 +293,7 @@ const fs = require("node:fs"),
     assert.equal(new URL(page.url()).hash, "#admin/area/new");
     assert(
       await page
-        .locator("#area-image-choice")
+        .locator("#area-image-file")
         .evaluate((el) => !el.checkValidity()),
     );
     await page.locator("#area-published").uncheck();
@@ -317,7 +314,16 @@ const fs = require("node:fs"),
     await visit("home");
     assert.equal(await page.locator(".area-card").count(), 3);
     await visit(editRoute);
-    await page.locator("#area-image-choice").selectOption("house");
+    await page.locator("#area-image-file").setInputFiles({
+      name: "veranstaltungen.png",
+      mimeType: "image/png",
+      buffer: png,
+    });
+    await page.waitForFunction(
+      () =>
+        document.querySelector("#area-image-preview img")?.naturalWidth ===
+        1536,
+    );
     const preset = await page
       .locator("#area-image-preview img")
       .getAttribute("src");
@@ -338,7 +344,6 @@ const fs = require("node:fs"),
     );
     assert.equal(await page.locator("#area-category").count(), 0);
     await visit(editRoute);
-    await page.locator("#area-image-choice").selectOption("upload");
     await page
       .locator("#area-image-file")
       .setInputFiles({
@@ -375,18 +380,6 @@ const fs = require("node:fs"),
         "Das Bereichsbild benötigt einen transparenten Hintergrund. Verwende bitte ein freigestelltes PNG oder WebP.",
       )
       .waitFor();
-    const png = Buffer.from(
-      await page.evaluate(() => {
-        const c = document.createElement("canvas");
-        c.width = 320;
-        c.height = 200;
-        const ctx = c.getContext("2d");
-        ctx.fillStyle = "#eae5dd";
-        ctx.fillRect(20, 20, 280, 160);
-        return c.toDataURL("image/png").split(",")[1];
-      }),
-      "base64",
-    );
     await page.locator("#area-image-file").setInputFiles({
       name: "test.png",
       mimeType: "image/png",
@@ -425,7 +418,7 @@ const fs = require("node:fs"),
       1536,
     );
     pass(
-      "Bereichsentwürfe ohne Bild, Bildpflicht beim Veröffentlichen, Stilvorlagen-Download, transparenter vereinheitlichter Upload und Abbrechen ohne Datenänderung.",
+      "Bereichsentwürfe ohne Bild, Bildpflicht beim Veröffentlichen, bereichseigener Bilddownload, transparenter vereinheitlichter Upload und Abbrechen ohne Datenänderung.",
     );
     await visit("admin/form/new");
     await page.locator("#form-title").fill("Selbsthilfe im Saal");
@@ -518,12 +511,12 @@ const fs = require("node:fs"),
     );
     await page.goto(base + "/#home");
     await page.reload();
-    for (const [name, motif] of [
-      ["Veranstaltungen", "house"],
-      ["Gemeindebüro", "finance"],
-      ["Musik", "it"],
-      ["Kinder", "house"],
-      ["Kommunikation", "it"],
+    for (const name of [
+      "Veranstaltungen",
+      "Gemeindebüro",
+      "Musik",
+      "Kinder",
+      "Kommunikation",
     ]) {
       await visit("admin/area/new");
       await page.locator("#area-name").fill(name);
@@ -531,7 +524,16 @@ const fs = require("node:fs"),
         .locator("#area-description")
         .fill("Ein weiterer Beispielbereich.");
       await page.locator("#area-email").fill("test@example.org");
-      await page.locator("#area-image-choice").selectOption(motif);
+      await page.locator("#area-image-file").setInputFiles({
+        name: name.toLowerCase() + ".png",
+        mimeType: "image/png",
+        buffer: png,
+      });
+      await page.waitForFunction(
+        () =>
+          document.querySelector("#area-image-preview img")?.naturalWidth ===
+          1536,
+      );
       await page.locator("#area-published").check();
       await save();
       await page.waitForURL("**/#admin/areas");

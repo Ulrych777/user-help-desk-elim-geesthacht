@@ -21,7 +21,7 @@ Bei Bedarf lokal ausliefern: `python3 -m http.server 8000 --directory prototype`
 
 **Prototyp:** Es gibt noch keine echte Anmeldung, keine dauerhafte Speicherung, keinen Spam-Schutz und keinen E-Mail-Versand. Alle Änderungen und hinzugefügten Bilder gehen beim Neuladen verloren. Empfängeradressen unter `example.org` sind Beispiele. Die WLAN-Anleitung ist ein ungeprüfter Beispielinhalt und enthält keine echten Zugangsdaten.
 
-Anfrageanhänge: höchstens drei Dateien mit zusammen 10 MB, JPG/PNG/WebP/PDF. Eigene Bereichsbilder: transparente PNG-/WebP-Dateien bis 5 MB; der Editor vereinheitlicht sie auf eine transparente Leinwand mit 1536 × 1024 Pixeln. Die drei vorhandenen Stilvorlagen können im Adminbereich heruntergeladen werden. Anleitungsbilder: höchstens fünf Bilder mit je 5 MB, einschließlich Bildbeschreibung, optionaler Bildunterschrift und Absatzposition. Die Bildlesbarkeit wird im Browser geprüft; verbindliche serverseitige Prüfungen gehören zur späteren Anwendung.
+Anfrageanhänge: höchstens drei Dateien mit zusammen 10 MB, JPG/PNG/WebP/PDF. Eigene Bereichsbilder: transparente PNG-/WebP-Dateien bis 5 MB; der Editor vereinheitlicht sie auf eine transparente Leinwand mit 1536 × 1024 Pixeln. Im Editor eines Bereichs kann ausschließlich dessen aktuelles Bild als Stilvorlage heruntergeladen oder ersetzt werden. Anleitungsbilder: höchstens fünf Bilder mit je 5 MB, einschließlich Bildbeschreibung, optionaler Bildunterschrift und Absatzposition. Die Bildlesbarkeit wird im Browser geprüft; verbindliche serverseitige Prüfungen gehören zur späteren Anwendung.
 
 ## Quellcode und Sicherung
 
