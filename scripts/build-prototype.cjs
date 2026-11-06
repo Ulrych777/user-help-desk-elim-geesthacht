@@ -23,6 +23,11 @@ const images = Object.fromEntries(
   ]),
 );
 const replacements = {
+  // Use the original square signet at the left of the wordmark unchanged.
+  FAVICON: "data:image/svg+xml;base64," + Buffer.from(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="224" height="224" viewBox="0 0 224 224">' +
+    '<image width="1154" height="224" href="' + images["Elim_Logo_L_Mini_Marine.png"] + '"/></svg>',
+  ).toString("base64"),
   PORTAL_CSS: fs.readFileSync(path.join(prototype, "portal.css"), "utf8"),
   CONTROL_CSS: fs.readFileSync(
     path.join(prototype, "form-controls.css"),
@@ -36,7 +41,7 @@ const template = fs.readFileSync(
   "utf8",
 );
 const result = template.replace(
-  /\{\{(PORTAL_CSS|CONTROL_CSS|PORTAL_JS|IMAGES)\}\}/g,
+  /\{\{(FAVICON|PORTAL_CSS|CONTROL_CSS|PORTAL_JS|IMAGES)\}\}/g,
   (_, key) => replacements[key],
 );
 fs.writeFileSync(path.join(prototype, "index.html"), result);
