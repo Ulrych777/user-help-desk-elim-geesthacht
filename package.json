@@ -1,0 +1,22 @@
+{
+  "name": "elim-kirche-serviceportal",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Cloudflare-Workers-Anwendung für das Elim Kirche Serviceportal",
+  "type": "module",
+  "scripts": {
+    "build:prototype": "node scripts/build-prototype.cjs",
+    "build:assets": "node scripts/build-worker-assets.cjs",
+    "build": "npm run build:prototype && npm run build:assets",
+    "check": "npm run build && tsc --noEmit && wrangler deploy --dry-run",
+    "dev": "npm run build && wrangler dev --local --persist-to=.wrangler/state",
+    "deploy": "npm run check && wrangler deploy",
+    "db:migrate:local": "wrangler d1 migrations apply DB --local --persist-to=.wrangler/state",
+    "db:seed:local": "wrangler d1 execute DB --local --persist-to=.wrangler/state --file=./seeds/dev.sql"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261018.1",
+    "typescript": "^7.0.2",
+    "wrangler": "4.151.3"
+  }
+}

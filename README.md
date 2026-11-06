@@ -19,7 +19,7 @@ Bei Bedarf lokal ausliefern: `python3 -m http.server 8000 --directory prototype`
 - Eigenes Bereichsbild unabhängig vom Symbol, vorhandenes Motiv oder Upload mit Kachelvorschau. Ein Bild ist zur Veröffentlichung erforderlich; unveröffentlichte Bereiche dürfen zunächst ohne Bild gespeichert werden.
 - Vereinheitlichte warme Formularfelder, dunkelblaue Auswahlzustände und passende Fokusmarkierungen. Der Footer bleibt auch bei kurzen Seiten am unteren Rand.
 
-**Prototyp:** Es gibt noch keine echte Anmeldung, keine dauerhafte Speicherung, keinen Spam-Schutz und keinen E-Mail-Versand. Alle Änderungen und hinzugefügten Bilder gehen beim Neuladen verloren. Empfängeradressen unter `example.org` sind Beispiele. Die WLAN-Anleitung ist ein ungeprüfter Beispielinhalt und enthält keine echten Zugangsdaten.
+**Prototyp:** Die Bedienoberfläche verwendet weiterhin ihre eingebetteten Beispieldaten. Das neue Cloudflare-Grundgerüst kann Katalogdaten bereits aus einer lokalen D1-Datenbank lesen, ist aber noch nicht mit der Oberfläche verbunden. Es gibt noch keine echte Anmeldung, keinen Spam-Schutz und keinen E-Mail-Versand. Änderungen in der Admin-Vorschau und hinzugefügte Bilder gehen beim Neuladen verloren. Empfängeradressen unter `example.org` sind Beispiele. Die WLAN-Anleitung ist ein ungeprüfter Beispielinhalt und enthält keine echten Zugangsdaten.
 
 Anfrageanhänge: höchstens drei Dateien mit zusammen 10 MB, JPG/PNG/WebP/PDF. Eigene Bereichsbilder: transparente PNG-/WebP-Dateien bis 5 MB; der Editor vereinheitlicht sie auf eine transparente Leinwand mit 1536 × 1024 Pixeln. Im Editor eines Bereichs kann ausschließlich dessen aktuelles Bild als Stilvorlage heruntergeladen oder ersetzt werden. Anleitungsbilder: höchstens fünf Bilder mit je 5 MB, einschließlich Bildbeschreibung, optionaler Bildunterschrift und Absatzposition. Die Bildlesbarkeit wird im Browser geprüft; verbindliche serverseitige Prüfungen gehören zur späteren Anwendung.
 
@@ -30,5 +30,20 @@ Die bearbeitbaren Quellen liegen in `prototype/portal.template.html`, `prototype
 `python3 scripts/backup-project.py` erstellt unter `backups/` eine ZIP-Datei mit Quellen, Vorschau, Dokumentation, Originalbildern und Prüfsummen. Git-Sicherungen sollen zusätzlich nach abgeschlossenen Änderungen auf einen Remote-Branch übertragen werden; eine ausschließlich lokale Cloud-Arbeitskopie genügt nicht als dauerhafte Sicherung.
 
 Die automatisierte Browserprüfung läuft mit `node scripts/check-prototype.cjs`. Dafür werden Playwright und Chromium benötigt; in der aktuellen Cloud-Umgebung sind beide vorhanden. Die Prüfung verwendet nur einen temporären lokalen Server und simulierte Anfragen.
+
+## Cloudflare-Anwendung lokal starten
+
+Voraussetzung ist Node.js. Danach:
+
+```bash
+npm install
+npm run db:migrate:local
+npm run db:seed:local
+npm run dev
+```
+
+Wrangler stellt die Anwendung standardmäßig unter `http://localhost:8787` bereit. `GET /api/health` prüft die lokale D1-Verbindung; `GET /api/catalog` liefert die veröffentlichten Bereiche, Kategorien, Anliegen und Formularfelder. Die lokale Datenbank liegt im ignorierten Verzeichnis `.wrangler/`.
+
+`npm run check` baut Website und Worker, prüft TypeScript und führt eine Cloudflare-Trockenprüfung aus. `npm run deploy` ist für eine spätere Bereitstellung vorgesehen. Vor dem ersten echten Deployment müssen die Cloudflare-Ressourcen angelegt und ihre IDs sowie die Entwicklungsdomain in `wrangler.jsonc` ergänzt werden. Zugangsdaten werden als Cloudflare-Secrets oder geschützte Umgebungsvariablen hinterlegt und niemals in Git gespeichert.
 
 Weitere Informationen: [Wiederherstellung](docs/WIEDERHERSTELLUNG.md), [Projektplan](docs/PROJEKTPLAN.md), [Bildherkunft](prototype/assets/README.md).
