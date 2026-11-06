@@ -47,11 +47,12 @@ Die Browserprüfung in `scripts/check-prototype.cjs` deckt die Original-Logo-Pr�
 
 `scripts/backup-project.py` erstellt zusätzlich eine portable ZIP-Sicherung mit Prüfsummen und dem zugehörigen Git-Stand. Eine Git-Bundle-Datei kann die lokale Versionsgeschichte unabhängig vom Workspace sichern. Die neu erstellte Arbeitskopie muss zusätzlich im Remote-Repository gespeichert oder heruntergeladen werden, damit ein weiterer Workspace-Wechsel sie nicht wieder unzugänglich macht.
 
-Die Rekonstruktion verwendet den Branch `reconstruction/serviceportal-2026-11-05`. Bei einer späteren Cloud-Umgebung muss dieser Branch statt des noch unveränderten `main` ausgewählt werden. In einer vorhandenen Arbeitskopie lautet der Wechsel:
+Der vollständige rekonstruierte Projektstand liegt inzwischen im Standardbranch `main`. Eine neue Cloud-Umgebung oder Arbeitskopie kann daher direkt den Standardbranch verwenden. In einer vorhandenen Arbeitskopie lässt sich der aktuelle Stand so abrufen:
 
 ```sh
 git fetch origin
-git switch reconstruction/serviceportal-2026-11-05
+git switch main
+git pull --ff-only
 ```
 
 Vor einem Branchwechsel eigene ungesicherte Änderungen separat sichern. Eine heruntergeladene ZIP kann auch ohne Git entpackt werden; darin lässt sich `prototype/index.html` unmittelbar öffnen. Ein Git-Bundle lässt sich mit `git clone <bundle-datei> <zielordner>` als vollständige lokale Arbeitskopie wiederherstellen.
