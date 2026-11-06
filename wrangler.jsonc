@@ -5,6 +5,7 @@
   "compatibility_date": "2026-10-26",
   "workers_dev": true,
   "preview_urls": false,
+  "account_id": "7557223ab991a08ac213c7adf79966d9",
   "vars": {
     "APP_ENV": "local",
     "PUBLIC_SITE_ENABLED": "true"
@@ -27,5 +28,28 @@
     "binding": "ASSETS",
     "directory": "./public",
     "run_worker_first": ["/api/*", "/admin", "/admin/*"]
+  },
+  "env": {
+    "test": {
+      "name": "elim-serviceportal-test",
+      "vars": {
+        "APP_ENV": "test",
+        "PUBLIC_SITE_ENABLED": "true"
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "elim-serviceportal-test-db",
+          "database_id": "2744e50d-35ba-4ffb-b76c-57a2fbc08396",
+          "migrations_dir": "migrations"
+        }
+      ],
+      "r2_buckets": [
+        {
+          "binding": "MEDIA",
+          "bucket_name": "elim-serviceportal-test-media"
+        }
+      ]
+    }
   }
 }

@@ -46,12 +46,12 @@ Die Rekonstruktion übernimmt diese Anordnung und die zuletzt überarbeitete Fel
 
 ## Nächste Projektphasen
 
-1. Die Cloudflare-Konfiguration der Ehrenamtplattform wurde als Referenz geprüft. Das lokale Worker-/D1-/R2-Grundgerüst und eine lesende öffentliche Katalog-API sind angelegt und getestet. Offen sind die echten Cloudflare-Ressourcen, deren IDs und die Entwicklungsdomain.
-2. Den vorhandenen Prototyp schrittweise an die API anbinden: zuerst öffentliche Katalogdaten, danach dauerhafte Verwaltung und Medien.
+1. Das Worker-/D1-/R2-Grundgerüst und die lesende öffentliche Katalog-API sind eingerichtet. Eine eigene Testumgebung ist unter `https://elim-serviceportal-test.glenn-ritter5994.workers.dev` veröffentlicht. Die Gemeinde-Domain bleibt bis zur Abnahme unverändert.
+2. Die öffentliche Oberfläche ist an die Katalog-API angebunden. Als Nächstes folgen dauerhafte Verwaltung und Medien.
 3. Cloudflare Access für den IT-Adminbereich einrichten und alle Admin-Endpunkte serverseitig schützen.
 4. E-Mail-Weg auswählen und den vollständigen Anfrageablauf mit Queue, Anhängen, Wiederholungsversuchen und automatischer Löschung umsetzen.
 5. Turnstile, Ratenbegrenzung, verbindliche Datei- und Eingabeprüfung sowie Datenschutzinformationen ergänzen.
 6. Mit den zuständigen Teams auf Desktop und Smartphone testen: Zuständigkeit, Suchtreffer, Pflichtangaben, Bildverwaltung, Anhänge, Direktlinks und Datenschutz.
 7. Nach funktionaler Abnahme den gestalterischen Feinschliff durchführen und erst danach die Gemeinde-Domain umstellen. Regelmäßige Sicherungen, Zuständigkeiten und Wartung dokumentieren.
 
-Der aktuelle Prototyp deckt die Oberfläche und simulierte Abläufe ab. Das Cloudflare-Grundgerüst liefert bereits die Website und liest Katalogdaten aus D1; die Oberfläche greift noch nicht auf diese API zu. Produktiver Versand und Verwaltung folgen in den nächsten Phasen.
+Die Testseite lädt ihren öffentlichen Katalog aus D1. Die eigenständige Prototypdatei bleibt als Offline-Vorschau mit simulierten Abläufen erhalten. Produktiver Versand und geschützte Verwaltung folgen in den nächsten Phasen.

@@ -7,5 +7,9 @@ const root = path.join(__dirname, ".."),
   target = path.join(targetDirectory, "index.html");
 
 fs.mkdirSync(targetDirectory, { recursive: true });
-fs.copyFileSync(source, target);
+// Only the Worker build loads D1 data. The standalone prototype stays offline.
+fs.writeFileSync(
+  target,
+  fs.readFileSync(source, "utf8").replace("<body>", '<body data-catalog-source="api">'),
+);
 console.log(`Worker-Asset erstellt: ${path.relative(root, target)}`);

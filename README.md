@@ -19,7 +19,9 @@ Bei Bedarf lokal ausliefern: `python3 -m http.server 8000 --directory prototype`
 - Eigenes Bereichsbild unabhängig vom Symbol, vorhandenes Motiv oder Upload mit Kachelvorschau. Ein Bild ist zur Veröffentlichung erforderlich; unveröffentlichte Bereiche dürfen zunächst ohne Bild gespeichert werden.
 - Vereinheitlichte warme Formularfelder, dunkelblaue Auswahlzustände und passende Fokusmarkierungen. Der Footer bleibt auch bei kurzen Seiten am unteren Rand.
 
-**Prototyp:** Die Bedienoberfläche verwendet weiterhin ihre eingebetteten Beispieldaten. Das neue Cloudflare-Grundgerüst kann Katalogdaten bereits aus einer lokalen D1-Datenbank lesen, ist aber noch nicht mit der Oberfläche verbunden. Es gibt noch keine echte Anmeldung, keinen Spam-Schutz und keinen E-Mail-Versand. Änderungen in der Admin-Vorschau und hinzugefügte Bilder gehen beim Neuladen verloren. Empfängeradressen unter `example.org` sind Beispiele. Die WLAN-Anleitung ist ein ungeprüfter Beispielinhalt und enthält keine echten Zugangsdaten.
+**Entwicklungsstand:** Die Worker-Version lädt Bereiche, Kategorien, Anliegen, Formularfelder und Anleitungstexte aus D1 über `/api/catalog`. Die eigenständige Datei `prototype/index.html` verwendet weiterhin eingebettete Beispieldaten und bietet die unveränderte Admin-Vorschau. In der Worker-Version ist diese Vorschau ausgeblendet; eine Verwaltung mit Anmeldung und dauerhafter Speicherung fehlt noch. Ebenso fehlen Spam-Schutz und E-Mail-Versand. Anfragen werden weiterhin nur simuliert. Änderungen in der eigenständigen Admin-Vorschau und hinzugefügte Bilder gehen beim Neuladen verloren. Empfängeradressen unter `example.org` sind Beispiele. Die WLAN-Anleitung ist ein ungeprüfter Beispielinhalt und enthält keine echten Zugangsdaten.
+
+Der Worker-Build kennzeichnet seine HTML-Datei mit `data-catalog-source="api"`. Bis zum Laden zeigt die Oberfläche einen Ladehinweis. Fehler bieten einen Wiederholungsbutton; es gibt keinen Rückfall auf eingebettete Beispieldaten. Ein leerer Katalog zeigt einen Leerzustand. Die drei bestehenden Bereichsbilder werden über ihre bekannten `image_key`-Werte den eingebetteten Motiven zugeordnet. Eigene R2-Bilder und Anleitungsbilder aus D1 sind noch nicht angebunden.
 
 Anfrageanhänge: höchstens drei Dateien mit zusammen 10 MB, JPG/PNG/WebP/PDF. Eigene Bereichsbilder: transparente PNG-/WebP-Dateien bis 5 MB; der Editor vereinheitlicht sie auf eine transparente Leinwand mit 1536 × 1024 Pixeln. Im Editor eines Bereichs kann ausschließlich dessen aktuelles Bild als Stilvorlage heruntergeladen oder ersetzt werden. Anleitungsbilder: höchstens fünf Bilder mit je 5 MB, einschließlich Bildbeschreibung, optionaler Bildunterschrift und Absatzposition. Die Bildlesbarkeit wird im Browser geprüft; verbindliche serverseitige Prüfungen gehören zur späteren Anwendung.
 
@@ -44,6 +46,47 @@ npm run dev
 
 Wrangler stellt die Anwendung standardmäßig unter `http://localhost:8787` bereit. `GET /api/health` prüft die lokale D1-Verbindung; `GET /api/catalog` liefert die veröffentlichten Bereiche, Kategorien, Anliegen und Formularfelder. Die lokale Datenbank liegt im ignorierten Verzeichnis `.wrangler/`.
 
-`npm run check` baut Website und Worker, prüft TypeScript und führt eine Cloudflare-Trockenprüfung aus. `npm run deploy` ist für eine spätere Bereitstellung vorgesehen. Vor dem ersten echten Deployment müssen die Cloudflare-Ressourcen angelegt und ihre IDs sowie die Entwicklungsdomain in `wrangler.jsonc` ergänzt werden. Zugangsdaten werden als Cloudflare-Secrets oder geschützte Umgebungsvariablen hinterlegt und niemals in Git gespeichert.
+`npm run check` baut Website und Worker, prüft TypeScript und führt eine Cloudflare-Trockenprüfung aus. Für die öffentliche Testumgebung wird `npm run deploy:test` verwendet. Der allgemeine Befehl `npm run deploy` enthält weiterhin lokale Ressourcen-Platzhalter und ist kein Produktionsdeployment. Zugangsdaten werden als Cloudflare-Secrets oder geschützte Umgebungsvariablen hinterlegt und niemals in Git gespeichert.
+
+## Öffentliche Testumgebung und Weiterentwicklung
+
+Testseite: **https://elim-serviceportal-test.glenn-ritter5994.workers.dev**
+
+Die Adresse läuft auf Cloudflare und ist unabhängig von der Codex-Arbeitsumgebung erreichbar. Sie zeigt den zuletzt bereitgestellten Code; lokale Änderungen werden erst nach einem weiteren Deployment sichtbar. Die Umgebung enthält ausschließlich Beispieldaten und simuliert das Absenden. Es gibt noch keine Anmeldung, dauerhafte Admin-Verwaltung oder E-Mail-Zustellung.
+
+Die benannte Wrangler-Umgebung `test` verwendet eigene Ressourcen:
+
+- Worker: `elim-serviceportal-test`
+- D1: `elim-serviceportal-test-db` (EU, ID in `wrangler.jsonc`)
+- R2: `elim-serviceportal-test-media`
+
+Die Ehrenamtplattform und die Gemeinde-Domain werden durch diese Befehle nicht verändert.
+
+In diesem Repository arbeiten und nach Änderungen ausführen:
+
+```bash
+npm ci
+npm run check
+# Bei laufendem lokalen Worker:
+node scripts/check-catalog.cjs
+node scripts/check-prototype.cjs
+# Geprüften Stand auf dieselbe öffentliche Test-URL bereitstellen:
+npm run deploy:test
+```
+
+In der verwalteten Codex-Umgebung zuvor die beschreibbaren Cache-/Konfigurationspfade setzen:
+
+```bash
+export npm_config_cache=/workspace/.cache/npm
+export XDG_CONFIG_HOME=/workspace/.config
+export WRANGLER_SEND_METRICS=false
+export CI=true
+```
+
+Für Cloudflare-Befehle muss `CLOUDFLARE_API_TOKEN` sicher bereitgestellt und für `api.cloudflare.com` freigegeben sein. `npm run deploy:test` prüft Build und TypeScript, führt einen Trockenlauf aus, wendet ausstehende Migrationen auf die Test-Datenbank an und veröffentlicht den Worker samt Website. Bestehende Testdaten werden nicht automatisch neu geladen. `npm run db:seed:test` lädt die Beispieldaten nur dann, wenn sämtliche Anwendungstabellen leer sind; vorhandene Daten bleiben erhalten.
+
+Nach einem Deployment `/api/health` (ok=true, environment="test", database="ready"), `/api/catalog`, Startseite und einen Anliegen-Direktlink prüfen. Der Browsertest kann über `PORTAL_TEST_URL=https://elim-serviceportal-test.glenn-ritter5994.workers.dev node scripts/check-catalog.cjs` gegen die Testseite laufen. Aus der Codex-Umgebung muss dafür zusätzlich der exakte Test-Hostname freigegeben sein.
+
+Bei laufendem lokalen Worker mit geladenen Beispieldaten prüft `node scripts/check-catalog.cjs` die API-Anbindung im Browser: D1-Daten, Direktlinks, Formularfelder, Anleitungstexte, Suche sowie Ladefehler, Wiederholung und leere/ungültige Kataloge. Die Prüfung benötigt dieselben Playwright-/Chromium-Voraussetzungen wie die Prototypprüfung und verändert keine Datenbankeinträge.
 
 Weitere Informationen: [Wiederherstellung](docs/WIEDERHERSTELLUNG.md), [Projektplan](docs/PROJEKTPLAN.md), [Bildherkunft](prototype/assets/README.md).

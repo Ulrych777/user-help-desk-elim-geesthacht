@@ -1540,6 +1540,8 @@ const app = $("main-content"),
   dialog = $("request-dialog"),
   slot = $("anfrage");
 const images = JSON.parse($("prototype-images").textContent);
+const usesCatalogApi = document.body.dataset.catalogSource === "api";
+let catalogReady = !usesCatalogApi;
 const esc = (value) =>
   String(value ?? "").replace(
     /[&<>"']/g,
@@ -2031,6 +2033,10 @@ function areaCard(area, preview = false) {
 function renderHome() {
   app.dataset.view = "home";
   delete app.dataset.area;
+  if (!areas.some((area) => area.published)) {
+    app.innerHTML = '<section class="panel"><h1>Hier ist noch nichts veröffentlicht.</h1><p>Bitte schau später noch einmal vorbei.</p></section>';
+    return;
+  }
   app.innerHTML = `<div class="home-layout"><section class="home-search-panel" aria-labelledby="home-title"><div class="home-search-surface"><div class="home-search-copy"><h1 id="home-title">Wobei brauchst du Unterstützung?</h1><p>Suche nach einem Thema oder wähle einen Bereich.</p><div role="search" aria-label="Alle Anliegen durchsuchen"><label class="sr-only" for="portal-search">Anliegen suchen</label><div class="searchbox">${icon("search")}<input id="portal-search" type="search" maxlength="300" autocomplete="off" placeholder="Zum Beispiel: WLAN oder Heizung" value="${esc(searchQuery)}" aria-controls="results"></div></div></div><div class="home-service-art" aria-hidden="true"><img src="${asset("service-eingang.webp")}" alt=""></div></div></section><div class="home-content"><section id="search-results" aria-labelledby="search-heading" hidden><div class="section-heading"><h2 id="search-heading">Passende Anliegen</h2><p id="result-count" role="status" aria-live="polite"></p></div><div class="results" id="results"></div></section><section aria-labelledby="areas-heading"><div class="section-heading"><h2 id="areas-heading">Unsere Bereiche</h2></div><div class="areas">${areas
     .filter((area) => area.published)
     .map((area) => areaCard(area))
@@ -2862,12 +2868,20 @@ function ensurePublic(areaId) {
   renderPage(areaById(areaId)?.published ? `#area/${areaId}` : "#home");
 }
 function route() {
+  if (!catalogReady) return;
   const next = location.hash || "#home";
   if (next === "#main-content") {
     app.focus();
     return;
   }
   const parts = next.slice(1).split("/");
+  if (usesCatalogApi && parts[0] === "admin") {
+    hideDialog();
+    app.innerHTML = '<section class="panel"><h1>Verwaltung noch nicht verfügbar</h1><p>Die Verwaltung mit Anmeldung und dauerhafter Speicherung wird noch eingerichtet.</p><a class="btn" href="#home">Zur Startseite</a></section>';
+    pageRoute = "";
+    document.title = "Verwaltung · Elim Kirche Serviceportal";
+    return;
+  }
   if (parts[0] === "form") {
     let id;
     try {
@@ -2899,7 +2913,80 @@ function route() {
   if (changed && !closed) window.scrollTo(0, 0);
 }
 window.addEventListener("hashchange", route);
-route();
+async function loadCatalog() {
+  catalogReady = false;
+  app.setAttribute("aria-busy", "true");
+  app.innerHTML = '<section class="panel" role="status"><h1>Serviceportal wird geladen …</h1></section>';
+  try {
+    const response = await fetch("/api/catalog", {
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!response.ok) throw new Error("Katalog nicht verfügbar");
+    const catalog = await response.json();
+    if (!Array.isArray(catalog.areas) || !Array.isArray(catalog.concerns))
+      throw new Error("Ungültiger Katalog");
+    if (
+      catalog.areas.some((area) =>
+        typeof area.id !== "string" || typeof area.name !== "string" ||
+        !Array.isArray(area.categories)) ||
+      catalog.concerns.some((concern) =>
+        typeof concern.id !== "string" || typeof concern.title !== "string" ||
+        !catalog.areas.some((area) => area.id === concern.area_id) ||
+        !["form", "guide"].includes(concern.type) ||
+        !Array.isArray(concern.categories) || !Array.isArray(concern.fields) ||
+        concern.fields.some((field) => !Array.isArray(field.options)))
+    ) throw new Error("Ungültiger Katalog");
+    // Map the public API explicitly; never mix database content with demo records.
+    const catalogAreas = catalog.areas.map((area) => ({
+      id: area.id,
+      name: area.name,
+      description: area.description,
+      icon: area.icon,
+      image: {
+        type: "library",
+        id: { "areas/it.webp": "it", "areas/haus.webp": "house", "areas/finanzen.webp": "finance" }[area.image_key],
+      },
+      published: true,
+      categories: area.categories.map((category) => ({
+        id: category.id,
+        name: category.name,
+      })),
+    }));
+    const catalogForms = catalog.concerns.map((concern) => ({
+      id: concern.id,
+      area: concern.area_id,
+      type: concern.type,
+      title: concern.title,
+      description: concern.description,
+      keywords: concern.keywords,
+      categories: concern.categories,
+      upload: concern.upload_enabled,
+      published: true,
+      fields: concern.fields,
+      guideText: concern.guide_text || "",
+      guideImages: [],
+    }));
+    areas.splice(0, areas.length, ...catalogAreas);
+    forms.splice(0, forms.length, ...catalogForms);
+    catalogReady = true;
+    pageRoute = "";
+    route();
+  } catch {
+    catalogReady = false;
+    app.innerHTML = '<section class="panel" role="alert"><h1>Das Serviceportal ist gerade nicht erreichbar.</h1><p>Bitte versuche es noch einmal.</p><button class="btn" id="retry-catalog" type="button">Erneut versuchen</button></section>';
+    $("retry-catalog").addEventListener("click", loadCatalog);
+  } finally {
+    app.removeAttribute("aria-busy");
+  }
+}
+if (usesCatalogApi) {
+  document.querySelector('footer a[href="#admin/areas"]')?.remove();
+  loadCatalog();
+} else {
+  route();
+}
 </script>
 </body>
 </html>
