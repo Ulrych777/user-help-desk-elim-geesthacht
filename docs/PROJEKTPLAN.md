@@ -6,7 +6,7 @@ Rekonstruierter Planungsstand vom 5. November 2026.
 
 Ein öffentliches, einfach bedienbares Serviceportal für Anliegen der Gemeinde ersetzt das überdimensionierte Atlassian-Portal. Anfragen gehen zur Bearbeitung an das zuständige E-Mail-Postfach. Eine eigene Ticketverwaltung, Nutzerkonten für Anfragende und eine Speicherung der Anfragen im Portal sind zunächst nicht vorgesehen.
 
-Die spätere Gemeindedomain ist vorhanden; für die Entwicklung wurde `glennritter.de` genannt. Domain, Hosting, Versanddienst und Adminanmeldung sind noch nicht technisch eingerichtet. Bestehende Weiterleitungen sollen erst nach erfolgreicher Abnahme umgestellt werden.
+Die spätere Gemeindedomain ist vorhanden; für Entwicklung und Abnahme wurde `glennritter.de` genannt. Als Betriebsplattform ist Cloudflare vorgesehen, analog zur Ehrenamtplattform. Nach Auskunft des Nutzers ist dort bereits eine Domainanbindung vorbereitet; die konkrete Konfiguration muss noch aus dem Referenzprojekt übernommen beziehungsweise geprüft werden. Die bestehende Weiterleitung von `helpdesk.elimgeesthacht.de` wird erst nach erfolgreicher Abnahme umgestellt.
 
 ## Vereinbarte Funktionen
 
@@ -14,7 +14,7 @@ Die spätere Gemeindedomain ist vorhanden; für die Entwicklung wurde `glennritt
 2. Eigene Bereichsseiten mit Bereichssuche und Kategorienfilter. Ein Anliegen gehört einem Bereich und kann dort mehreren Kategorien angehören, wird aber nur einmal gepflegt und angezeigt.
 3. Anliegen sind Formulare oder Anleitungen. Beide öffnen als Dialog mit teilbarem Link. Anleitungen enden immer mit einem Kontaktformular aus E-Mail-Adresse, Betreff und Nachricht.
 4. Zentrale Verwaltung durch das IT-Team für Bereiche, Kategorien, Empfängeradressen, Formulare und Anleitungen. Die späteren Adminzugänge müssen geschützt werden; die Empfängerteams bearbeiten ihre Postfächer ohne eigenen Portalzugang.
-5. Ein Bereich benötigt ein passendes Bild zur Veröffentlichung. Vorhandene Motive oder eigene Bilder können gewählt und in der Kachelvorschau geprüft werden. Das IT-Team beurteilt die thematische Eignung und den einheitlichen Illustrationsstil.
+5. Ein Bereich benötigt ein passendes Bild zur Veröffentlichung. Im Editor wird ausschließlich das Bild dieses Bereichs angezeigt, heruntergeladen oder durch einen transparenten Upload ersetzt. Das IT-Team beurteilt die thematische Eignung und den einheitlichen Illustrationsstil.
 6. Formularfelder: kurzer/langer Text, E-Mail, Datum, Einfach- und Mehrfachauswahl, Pflichtfelder und optionaler Dateiupload. Ein bedingter Formularbaukasten ist zunächst nicht erforderlich.
 7. Lokale Suche mit Synonymen und Tippfehlertoleranz. Eine spätere optionale semantische oder LLM-Suche darf ausschließlich veröffentlichte Katalogeinträge empfehlen und keine Anfrage selbstständig versenden. Anbieter, Kosten und Datenverarbeitung sind offen.
 
@@ -33,12 +33,25 @@ Gewählt ist das geteilte Layout (Variante E): dunkelblaue Suchfläche links, wa
 
 Die Rekonstruktion übernimmt diese Anordnung und die zuletzt überarbeitete Feldgestaltung. Die neuen Illustrationen und einzelne Abstände können vom verlorenen Entwurf abweichen. Die ursprünglichen Mockup-Dateien sind in dieser Umgebung nicht vorhanden.
 
+## Technische Zielarchitektur auf Cloudflare
+
+- Ein Cloudflare Worker liefert die öffentliche Anwendung und die statischen Assets aus und stellt die serverseitigen API-Endpunkte bereit.
+- Cloudflare D1 speichert Bereiche, Kategorien, Anliegen, dynamische Formularfelder und Veröffentlichungszustände.
+- Cloudflare R2 speichert dauerhafte Bereichs- und Anleitungsbilder getrennt von temporären Anfrageanhängen.
+- Cloudflare Access schützt die Verwaltungsseiten und die zugehörigen Admin-API-Endpunkte. Der bisherige Hash-Pfad für die Verwaltung wird dafür auf eine serverseitig erkennbare Route umgestellt.
+- Cloudflare Turnstile, serverseitige Ratenbegrenzung und ein unsichtbares Formularfeld schützen öffentliche Anfragen vor automatisiertem Missbrauch.
+- Eine Queue übernimmt den Versand mit Wiederholungsversuchen. Temporäre Anhänge werden über R2-Schlüssel referenziert und nach erfolgreichem Versand gelöscht; ein geplanter Cron-Lauf entfernt liegen gebliebene Dateien nach einer festgelegten Frist.
+- Der ausgehende E-Mail-Versand erfolgt über eine HTTPS-fähige Versandlösung. Cloudflare Workers können keinen klassischen SMTP-Server direkt ansprechen. Als Varianten kommen ein Transaktionsmaildienst oder Microsoft Graph für ein vorhandenes Microsoft-365-Postfach infrage.
+- Geheimnisse wie Versand- und API-Zugangsdaten werden ausschließlich als Cloudflare-Secrets hinterlegt und nicht in Git gespeichert.
+
 ## Nächste Projektphasen
 
-1. Rekonstruktion gemeinsam mit den letzten Screenshots und Entscheidungen abgleichen. Tatsächliche Startbereiche, Anliegen, Formularfelder, Empfänger und Anleitungstexte festlegen.
-2. Hosting, Adminanmeldung, Konfigurationsspeicher und E-Mail-Versand auswählen. Bereichs-/Anleitungsmedien und temporäre Anfrageanhänge getrennt speichern.
-3. Backend, Versand, Spam-Schutz, Dateiprüfung und geschützte Verwaltung umsetzen. Fehlerfälle und Löschung nachvollziehbar prüfen.
-4. Mit den zuständigen Teams auf Desktop und Smartphone testen: Zuständigkeit, Suchtreffer, Pflichtangaben, Bildverwaltung, Anhänge, Direktlinks und Datenschutz.
-5. Erst nach Abnahme die Gemeinde-Domain umstellen. Regelmäßige Sicherungen, Zuständigkeiten und Wartung dokumentieren.
+1. Cloudflare-Konfiguration der Ehrenamtplattform als Referenz prüfen, Entwicklungsdomain festlegen und das Worker-/D1-/R2-Grundgerüst erstellen.
+2. Den vorhandenen Prototyp schrittweise an die API anbinden: zuerst öffentliche Katalogdaten, danach dauerhafte Verwaltung und Medien.
+3. Cloudflare Access für den IT-Adminbereich einrichten und alle Admin-Endpunkte serverseitig schützen.
+4. E-Mail-Weg auswählen und den vollständigen Anfrageablauf mit Queue, Anhängen, Wiederholungsversuchen und automatischer Löschung umsetzen.
+5. Turnstile, Ratenbegrenzung, verbindliche Datei- und Eingabeprüfung sowie Datenschutzinformationen ergänzen.
+6. Mit den zuständigen Teams auf Desktop und Smartphone testen: Zuständigkeit, Suchtreffer, Pflichtangaben, Bildverwaltung, Anhänge, Direktlinks und Datenschutz.
+7. Nach funktionaler Abnahme den gestalterischen Feinschliff durchführen und erst danach die Gemeinde-Domain umstellen. Regelmäßige Sicherungen, Zuständigkeiten und Wartung dokumentieren.
 
 Der aktuelle Prototyp deckt die Oberfläche und simulierte Abläufe ab, nicht den produktiven Betrieb.
