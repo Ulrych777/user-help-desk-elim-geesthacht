@@ -6,7 +6,10 @@ const app = $("main-content"),
   slot = $("anfrage");
 const images = JSON.parse($("prototype-images").textContent);
 const usesCatalogApi = document.body.dataset.catalogSource === "api";
-let catalogReady = !usesCatalogApi;
+const usesPortalApi = document.body.dataset.catalogSource === "portal";
+const adminDocument = usesPortalApi && document.body.dataset.admin === "true";
+let portalVersion = 0, adminEmail = "";
+let catalogReady = !usesCatalogApi && !usesPortalApi;
 const esc = (value) =>
   String(value ?? "").replace(
     /[&<>"']/g,
@@ -35,7 +38,9 @@ document
   .querySelectorAll("img[data-asset]")
   .forEach((image) => (image.src = asset(image.dataset.asset)));
 let sequence = 0;
-const newId = (prefix) => `${prefix}-${++sequence}`;
+const newId = (prefix) => usesPortalApi
+  ? prefix + "-" + crypto.randomUUID()
+  : prefix + "-" + ++sequence;
 const areaImageLibrary = [
   {
     id: "it",
@@ -266,16 +271,24 @@ const publicForms = () =>
   forms.filter((form) => form.published && areaById(form.area)?.published);
 const validUploadSource = (src) =>
   /^data:image\/(?:png|jpeg|webp);base64,[a-z0-9+/=]+$/i.test(src || "");
+const validStoredSource = (src) => /^\/media\/[a-f0-9-]{36}\.(?:png|webp|jpg)$/.test(src || "");
+const mediaSource = (src) => adminDocument
+  ? src.replace(/^\/media\//, "/api/admin/media/")
+  : src;
 function areaImageSource(area) {
   if (area.image?.type === "library")
     return asset(
       areaImageLibrary.find((item) => item.id === area.image.id)?.src,
     );
+  if (area.image?.type === "stored" && validStoredSource(area.image.src))
+    return mediaSource(area.image.src);
   return area.image?.type === "upload" && validUploadSource(area.image.src)
     ? area.image.src
     : "";
 }
 function areaImageDownload(image) {
+  if (image?.type === "stored" && validStoredSource(image.src))
+    return { src: mediaSource(image.src), filename: image.name || "Bereichsbild.png" };
   if (image?.type === "library") {
     const item = areaImageLibrary.find((entry) => entry.id === image.id);
     return item ? { src: asset(item.src), filename: item.filename } : null;
@@ -288,6 +301,7 @@ function areaImageDownload(image) {
     : null;
 }
 function guideImageSource(src) {
+  if (validStoredSource(src)) return mediaSource(src);
   return validUploadSource(src) ? src : asset(src);
 }
 const options = (values, current) =>
@@ -894,11 +908,84 @@ $("copy-request-link").addEventListener("click", async () => {
   copyLinkTimer = setTimeout(resetCopyLink, copied ? 2500 : 4000);
 });
 
-function adminShell(section, content) {
+function renderAdminShell(section, content) {
   app.dataset.view = "admin";
   delete app.dataset.area;
   app.innerHTML = `${crumbs("Admin-Vorschau")}<div class="page-heading dark"><p class="eyebrow">Für das IT-Team</p><h1>Portal verwalten</h1><p>Bereiche, Zuständigkeiten, Formulare und Anleitungen zentral pflegen.</p></div><div class="admin-note"><strong>Admin-Vorschau ohne Anmeldung:</strong> Änderungen gelten nur in diesem geöffneten Entwurf und gehen beim Neuladen verloren. Alle Empfängeradressen sind Beispiele.</div><div class="admin-layout"><nav class="admin-nav" aria-label="Verwaltung"><a class="${section === "areas" ? "active" : ""}" href="#admin/areas">Bereiche & Kategorien</a><a class="${section === "forms" ? "active" : ""}" href="#admin/forms">Anliegen</a></nav><section>${content}</section></div>`;
 }
+function adminShell(section, content) {
+  if (adminDocument)
+    content = content.replace("Bilder bleiben in dieser Vorschau nur bis zum Neuladen erhalten.", "Bilder werden dauerhaft gespeichert.");
+  renderAdminShell(section, content);
+  if (adminDocument) {
+    app.querySelector(".admin-note").innerHTML =
+      'Angemeldet als <strong>' + esc(adminEmail) +
+      '</strong>. Gespeicherte Änderungen bleiben erhalten. <a href="/cdn-cgi/access/logout">Abmelden</a>';
+    app.querySelectorAll('button[type="submit"]').forEach(button => {
+      if (button.textContent === "In Vorschau speichern") button.textContent = "Speichern";
+    });
+  }
+}
+
+async function savePortalState(nextAreas, nextForms, editor) {
+  if (!usesPortalApi) {
+    areas.splice(0, areas.length, ...nextAreas);
+    forms.splice(0, forms.length, ...nextForms);
+    return true;
+  }
+  const buttons = [...editor.querySelectorAll('button[type="submit"]')];
+  buttons.forEach(button => { button.disabled = true; });
+  let notice = editor.querySelector(".save-notice");
+  if (!notice) {
+    notice = document.createElement("p");
+    notice.className = "save-notice";
+    editor.append(notice);
+  }
+  notice.setAttribute("role", "status");
+  notice.textContent = "Änderungen werden gespeichert …";
+  try {
+    const state = structuredClone({ areas: nextAreas, forms: nextForms });
+    const upload = async (src) => {
+      const blob = await (await fetch(src)).blob();
+      const response = await fetch("/api/admin/media", {
+        method: "POST", headers: { "Content-Type": blob.type }, body: blob,
+      });
+      if (!response.ok || !response.headers.get("content-type")?.includes("application/json"))
+        throw new Error("Das Bild konnte nicht gespeichert werden. Bitte Anmeldung und Dateityp prüfen.");
+      return (await response.json()).src;
+    };
+    for (const area of state.areas) {
+      if (area.image?.type === "upload") {
+        area.image = { type: "stored", src: await upload(area.image.src), name: area.image.name || "Bereichsbild.png" };
+      }
+    }
+    for (const form of state.forms) {
+      for (const img of form.guideImages || []) {
+        if (validUploadSource(img.src)) img.src = await upload(img.src);
+      }
+    }
+    const response = await fetch("/api/admin/portal", {
+      method: "PUT", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ version: portalVersion, ...state }),
+    });
+    if (!response.headers.get("content-type")?.includes("application/json"))
+      throw new Error("Die Anmeldung ist möglicherweise abgelaufen. Deine Änderungen wurden nicht gespeichert.");
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || "Speichern fehlgeschlagen.");
+    portalVersion = result.version;
+    areas.splice(0, areas.length, ...result.areas);
+    forms.splice(0, forms.length, ...result.forms);
+    notice.remove();
+    return true;
+  } catch (error) {
+    notice.setAttribute("role", "alert");
+    notice.textContent = error.message || "Speichern fehlgeschlagen. Bitte erneut versuchen.";
+    return false;
+  } finally {
+    buttons.forEach(button => { button.disabled = false; });
+  }
+}
+
 function renderAdminList(section) {
   if (section === "areas") {
     adminShell(
@@ -971,7 +1058,7 @@ function renderAreaEditor(id) {
       : "";
     $("remove-area-image").hidden = !source;
     $("area-image-file-name").textContent =
-      draftImage?.type === "upload"
+      ["upload", "stored"].includes(draftImage?.type)
         ? `Aktuelles Bild: ${draftImage.name || "Eigenes Bild"}`
         : source
           ? "Aktuelles Bild: vorhandene Stilvorlage"
@@ -1034,7 +1121,7 @@ function renderAreaEditor(id) {
     );
     bindCategoryRemovals();
   });
-  editor.addEventListener("submit", (event) => {
+  editor.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (imagePending) return;
     validate();
@@ -1057,9 +1144,10 @@ function renderAreaEditor(id) {
       published: $("area-published").checked,
       categories,
     };
-    if (existing) Object.assign(existing, values);
-    else areas.push(values);
-    forms
+    const nextAreas = areas.map(area => area.id === values.id ? values : area);
+    if (!existing) nextAreas.push(values);
+    const nextForms = structuredClone(forms);
+    nextForms
       .filter((form) => form.area === values.id)
       .forEach(
         (form) =>
@@ -1067,7 +1155,8 @@ function renderAreaEditor(id) {
             categories.some((category) => category.id === id),
           )),
       );
-    location.hash = "admin/areas";
+    if (await savePortalState(nextAreas, nextForms, editor))
+      location.hash = "admin/areas";
   });
 }
 
@@ -1252,7 +1341,7 @@ function renderFormEditor(id) {
       }
     }
   });
-  editor.addEventListener("submit", (event) => {
+  editor.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (imagePending) return;
     const fields = Array.from(editor.querySelectorAll("[data-field-row]")).map(
@@ -1296,8 +1385,9 @@ function renderFormEditor(id) {
       guideText: $("guide-text").value.trim(),
       guideImages: guideImages.map((image) => ({ ...image })),
     };
-    if (existing) Object.assign(existing, values);
-    else forms.push(values);
+    const nextForms = forms.map(form => form.id === values.id ? values : form);
+    if (!existing) nextForms.push(values);
+    if (!await savePortalState(areas, nextForms, editor)) return;
     if (slot.dataset.form === values.id) {
       delete slot.dataset.form;
       slot.innerHTML = "";
@@ -1334,12 +1424,16 @@ function ensurePublic(areaId) {
 }
 function route() {
   if (!catalogReady) return;
-  const next = location.hash || "#home";
+  const next = location.hash || (adminDocument ? "#admin/areas" : "#home");
   if (next === "#main-content") {
     app.focus();
     return;
   }
   const parts = next.slice(1).split("/");
+  if (usesPortalApi && parts[0] === "admin" && !adminDocument) {
+    location.assign("/admin/" + next);
+    return;
+  }
   if (usesCatalogApi && parts[0] === "admin") {
     hideDialog();
     app.innerHTML = '<section class="panel"><h1>Verwaltung noch nicht verfügbar</h1><p>Die Verwaltung mit Anmeldung und dauerhafter Speicherung wird noch eingerichtet.</p><a class="btn" href="#home">Zur Startseite</a></section>';
@@ -1446,7 +1540,37 @@ async function loadCatalog() {
     app.removeAttribute("aria-busy");
   }
 }
-if (usesCatalogApi) {
+async function loadPortal() {
+  catalogReady = false;
+  app.setAttribute("aria-busy", "true");
+  app.innerHTML = '<section class="panel" role="status"><h1>Serviceportal wird geladen …</h1></section>';
+  try {
+    const response = await fetch(adminDocument ? "/api/admin/portal" : "/api/portal", {
+      cache: "no-store", headers: { Accept: "application/json" }, signal: AbortSignal.timeout(15000),
+    });
+    if (!response.ok) throw new Error("Portal nicht verfügbar");
+    const state = await response.json();
+    if (!Array.isArray(state.areas) || !Array.isArray(state.forms) || !Number.isInteger(state.version))
+      throw new Error("Ungültiger Portalstand");
+    portalVersion = state.version;
+    adminEmail = state.email || "";
+    areas.splice(0, areas.length, ...state.areas);
+    forms.splice(0, forms.length, ...state.forms);
+    catalogReady = true;
+    pageRoute = "";
+    route();
+  } catch {
+    catalogReady = false;
+    app.innerHTML = '<section class="panel" role="alert"><h1>Das Serviceportal ist gerade nicht erreichbar.</h1><p>Bitte versuche es noch einmal. Im Admin-Bereich kann eine erneute Anmeldung nötig sein.</p><button class="btn" id="retry-portal" type="button">Erneut versuchen</button></section>';
+    $("retry-portal").addEventListener("click", loadPortal);
+  } finally {
+    app.removeAttribute("aria-busy");
+  }
+}
+if (usesPortalApi) {
+  document.querySelector('footer a[href="#admin/areas"]')?.setAttribute("href", "/admin/#admin/areas");
+  loadPortal();
+} else if (usesCatalogApi) {
   document.querySelector('footer a[href="#admin/areas"]')?.remove();
   loadCatalog();
 } else {

@@ -32,6 +32,7 @@
   "env": {
     "preview": {
       "name": "elim-serviceportal-preview",
+      "workers_dev": false,
       "routes": [
         {
           "pattern": "serviceportal.glennritter.de",
@@ -42,11 +43,15 @@
       "assets": {
         "binding": "ASSETS",
         "directory": "./public-preview",
-        "run_worker_first": ["/api/*", "/admin", "/admin/*"]
+        "run_worker_first": ["/api/*", "/admin", "/admin/*", "/media/*"]
       },
       "vars": {
         "APP_ENV": "preview",
-        "PUBLIC_SITE_ENABLED": "true"
+        "PUBLIC_SITE_ENABLED": "true",
+        "PORTAL_MODE": "persistent",
+        "CF_ACCESS_TEAM_DOMAIN": "cold-cell-4312.cloudflareaccess.com",
+        "CF_ACCESS_AUD": "09b952547e3db140088512bab69da9305ebb6c02c4b3de89fbda61e99bf33d2a",
+        "ADMIN_EMAILS": "glenn.ritter@elimgeesthacht.de"
       },
       "d1_databases": [
         {

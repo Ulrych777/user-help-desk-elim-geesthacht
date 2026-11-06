@@ -1,0 +1,264 @@
+{
+  "areas": [
+    {
+      "id": "it",
+      "name": "IT",
+      "description": "Unterstützung bei Computern, Software, Netzwerk und mehr.",
+      "icon": "it",
+      "image": {
+        "type": "library",
+        "id": "it"
+      },
+      "email": "it@example.org",
+      "published": true,
+      "categories": [
+        {
+          "id": "hilfe",
+          "name": "Hilfe & Störungen"
+        },
+        {
+          "id": "konten",
+          "name": "Konten & Zugänge"
+        },
+        {
+          "id": "software",
+          "name": "Software & Zusammenarbeit"
+        }
+      ]
+    },
+    {
+      "id": "haus",
+      "name": "Haus & Hof",
+      "description": "Anliegen rund um Gebäude, Technik und Außenanlagen.",
+      "icon": "house",
+      "image": {
+        "type": "library",
+        "id": "house"
+      },
+      "email": "hausmeister@example.org",
+      "published": true,
+      "categories": [
+        {
+          "id": "gebaeude",
+          "name": "Gebäude & Ausstattung"
+        },
+        {
+          "id": "aussen",
+          "name": "Außenanlagen"
+        }
+      ]
+    },
+    {
+      "id": "finanzen",
+      "name": "Finanzbuchhaltung",
+      "description": "Fragen zu Rechnungen, Zahlungen und finanziellen Prozessen.",
+      "icon": "finance",
+      "image": {
+        "type": "library",
+        "id": "finance"
+      },
+      "email": "finanzen@example.org",
+      "published": true,
+      "categories": [
+        {
+          "id": "erstattungen",
+          "name": "Erstattungen"
+        }
+      ]
+    }
+  ],
+  "forms": [
+    {
+      "id": "it-allgemein",
+      "area": "it",
+      "title": "Allgemeine IT-Anfrage",
+      "description": "Du brauchst Hilfe oder bist unsicher, welches Anliegen passt?",
+      "categories": [
+        "hilfe"
+      ],
+      "keywords": "Hilfe Technik Computer Drucker Störung",
+      "upload": true,
+      "published": true,
+      "fields": [],
+      "type": "form",
+      "guideText": "",
+      "guideImages": []
+    },
+    {
+      "id": "microsoft365",
+      "area": "it",
+      "title": "Microsoft-365-Konto beantragen",
+      "description": "Ein neues Konto für deine Mitarbeit in der Gemeinde anfragen.",
+      "categories": [
+        "konten",
+        "software"
+      ],
+      "keywords": "Microsoft Office Teams E-Mail Zugang Benutzer Lizenz M365",
+      "upload": false,
+      "published": true,
+      "fields": [
+        {
+          "id": "team",
+          "label": "In welchem Team arbeitest du mit?",
+          "type": "text",
+          "required": true,
+          "options": []
+        },
+        {
+          "id": "start",
+          "label": "Ab wann wird das Konto benötigt?",
+          "type": "date",
+          "required": false,
+          "options": []
+        }
+      ],
+      "type": "form",
+      "guideText": "",
+      "guideImages": []
+    },
+    {
+      "id": "wlan-problem",
+      "area": "it",
+      "title": "WLAN-Problem melden",
+      "description": "Du kommst nicht ins WLAN oder die Internetverbindung funktioniert nicht?",
+      "categories": [
+        "hilfe"
+      ],
+      "keywords": "WLAN WiFi Internet Netzwerk Verbindung funktioniert verbindet Problem Störung",
+      "upload": true,
+      "published": true,
+      "fields": [
+        {
+          "id": "wlan-ort",
+          "label": "Wo tritt das Problem auf?",
+          "type": "text",
+          "required": true,
+          "options": []
+        }
+      ],
+      "type": "form",
+      "guideText": "",
+      "guideImages": []
+    },
+    {
+      "id": "wlan-zugang",
+      "area": "it",
+      "title": "Mitarbeiter-WLAN-Zugang beantragen",
+      "description": "Einen neuen Zugang zum WLAN für deine Mitarbeit anfragen.",
+      "categories": [
+        "konten"
+      ],
+      "keywords": "WLAN WiFi Zugang beantragen neu Mitarbeiter",
+      "upload": false,
+      "published": true,
+      "fields": [],
+      "type": "form",
+      "guideText": "",
+      "guideImages": []
+    },
+    {
+      "id": "haus-schaden",
+      "area": "haus",
+      "title": "Schaden am Gebäude melden",
+      "description": "Eine Beschädigung oder einen Reparaturbedarf mit Foto melden.",
+      "categories": [
+        "gebaeude"
+      ],
+      "keywords": "Schaden Reparatur kaputt Gebäude Heizung Tür Licht",
+      "upload": true,
+      "published": true,
+      "fields": [
+        {
+          "id": "ort",
+          "label": "Wo befindet sich der Schaden?",
+          "type": "text",
+          "required": true,
+          "options": []
+        },
+        {
+          "id": "art",
+          "label": "Welcher Bereich ist betroffen?",
+          "type": "select",
+          "required": true,
+          "options": [
+            "Raum oder Ausstattung",
+            "Heizung oder Sanitär",
+            "Elektrik oder Beleuchtung",
+            "Sonstiges"
+          ]
+        }
+      ],
+      "type": "form",
+      "guideText": "",
+      "guideImages": []
+    },
+    {
+      "id": "haus-allgemein",
+      "area": "haus",
+      "title": "Allgemeine Anfrage zu Haus & Hof",
+      "description": "Dein Anliegen rund um unser Gebäude und das Gelände.",
+      "categories": [],
+      "keywords": "Hausmeister Raum Garten Gelände",
+      "upload": true,
+      "published": true,
+      "fields": [],
+      "type": "form",
+      "guideText": "",
+      "guideImages": []
+    },
+    {
+      "id": "erstattung",
+      "area": "finanzen",
+      "title": "Frage zu einer Erstattung",
+      "description": "Eine Rückfrage zum Ablauf oder zu einer bereits eingereichten Erstattung.",
+      "categories": [
+        "erstattungen"
+      ],
+      "keywords": "Geld Auslage Beleg Kosten Erstattung Rechnung Zahlung",
+      "upload": false,
+      "published": true,
+      "fields": [],
+      "type": "form",
+      "guideText": "",
+      "guideImages": []
+    },
+    {
+      "id": "finanzen-allgemein",
+      "area": "finanzen",
+      "title": "Allgemeine Anfrage an die Finanzbuchhaltung",
+      "description": "Eine allgemeine Frage an unser Finanzteam stellen.",
+      "categories": [],
+      "keywords": "Buchhaltung Finanzen",
+      "upload": false,
+      "published": true,
+      "fields": [],
+      "type": "form",
+      "guideText": "",
+      "guideImages": []
+    },
+    {
+      "id": "wlan-anleitung",
+      "type": "guide",
+      "area": "it",
+      "title": "WLAN-Verbindung selbst prüfen",
+      "description": "Prüfe deine Geräteeinstellungen. Wenn du nicht weiterkommst, schreib uns am Ende der Anleitung.",
+      "categories": [
+        "hilfe"
+      ],
+      "keywords": "WLAN WiFi Internet Netzwerk Flugmodus Selbsthilfe Verbindung",
+      "upload": false,
+      "published": true,
+      "fields": [],
+      "guideText": "Prüfe zuerst in den Einstellungen deines Geräts, ob WLAN eingeschaltet und der Flugmodus ausgeschaltet ist. Die Darstellung unten ist ein schematisches Beispiel; auf deinem Gerät kann sie anders aussehen.\n\nWähle das von der Gemeinde für dich vorgesehene WLAN. Den richtigen Netzwerknamen und die Zugangsinformationen erhältst du vom zuständigen Team. In dieser Beispielanleitung sind keine echten Zugangsdaten hinterlegt.\n\nWenn die Verbindung weiterhin nicht klappt, schalte WLAN auf deinem Gerät kurz aus und wieder ein. Ändere dabei keine Einstellungen an Routern oder anderer Gemeindetechnik. Beschreibe uns anschließend, an welchem Ort und mit welchem Gerät das Problem auftritt.",
+      "guideImages": [
+        {
+          "id": "wlan-schema",
+          "src": "wlan-einstellungen.svg",
+          "alt": "Schematische Geräteeinstellungen: WLAN ist eingeschaltet, der Flugmodus ist ausgeschaltet.",
+          "caption": "Beispielgrafik zur Orientierung. Vor Veröffentlichung vom IT-Team prüfen.",
+          "afterParagraph": 1
+        }
+      ]
+    }
+  ]
+}

@@ -46,12 +46,12 @@ Die Rekonstruktion übernimmt diese Anordnung und die zuletzt überarbeitete Fel
 
 ## Nächste Projektphasen
 
-1. Die vollständige Entwicklungsseite samt Admin-Vorschau liegt unter `https://serviceportal.glennritter.de` und wird aus GitHub `main` veröffentlicht. Feedback führt zu geprüften Quellcodeänderungen, Commit, Push und erneutem Deployment auf dieselbe Adresse. Das Worker-/D1-/R2-Grundgerüst und die lesende öffentliche Katalog-API sind separat unter `https://elim-serviceportal-test.glenn-ritter5994.workers.dev` eingerichtet. Die Gemeinde-Domain bleibt bis zur Abnahme unverändert.
-2. Die öffentliche Oberfläche ist an die Katalog-API angebunden. Als Nächstes folgen dauerhafte Verwaltung und Medien.
-3. Cloudflare Access für den IT-Adminbereich einrichten und alle Admin-Endpunkte serverseitig schützen.
+1. Die vollständige Entwicklungsseite unter https://serviceportal.glennritter.de wird aus GitHub main veröffentlicht. Die Verwaltung unter /admin/ ist durch eine eigene Cloudflare-Access-Anwendung und zusätzliche JWT-Prüfung im Worker geschützt. Die Gemeinde-Domain bleibt bis zur Abnahme unverändert.
+2. Die vollständigen Ausgangsinhalte (drei Bereiche, neun Anliegen) sind dauerhaft in D1 übernommen. Die öffentliche Seite lädt veröffentlichte Inhalte, die Verwaltung speichert Inhalte und R2-Bilder dauerhaft. Parallele Änderungen werden über Versionsprüfung abgefangen.
+3. Cloudflare Access und serverseitiger Schutz der Admin-Seiten und Admin-API sind eingerichtet; die erste echte Anmeldung per Code wird vom Benutzer im Browser geprüft.
 4. E-Mail-Weg auswählen und den vollständigen Anfrageablauf mit Queue, Anhängen, Wiederholungsversuchen und automatischer Löschung umsetzen.
 5. Turnstile, Ratenbegrenzung, verbindliche Datei- und Eingabeprüfung sowie Datenschutzinformationen ergänzen.
 6. Mit den zuständigen Teams auf Desktop und Smartphone testen: Zuständigkeit, Suchtreffer, Pflichtangaben, Bildverwaltung, Anhänge, Direktlinks und Datenschutz.
 7. Nach funktionaler Abnahme den gestalterischen Feinschliff durchführen und erst danach die Gemeinde-Domain umstellen. Regelmäßige Sicherungen, Zuständigkeiten und Wartung dokumentieren.
 
-Die vollständige Entwicklungsseite verwendet sämtliche eingebetteten Prototypdaten und bietet die Admin-Vorschau. Die separate API-Testseite lädt ihren Katalog aus D1. Die eigenständige Prototypdatei bleibt offline nutzbar. Produktiver Versand und geschützte, dauerhafte Verwaltung folgen in den nächsten Phasen.
+Die vollständige Entwicklungsseite lädt ihren Inhaltsstand aus D1. Die geschützte Verwaltung speichert Änderungen und Medien dauerhaft. Die eigenständige Prototypdatei bleibt offline nutzbar. Produktiver E-Mail-Versand folgt als nächster Entwicklungsschritt.

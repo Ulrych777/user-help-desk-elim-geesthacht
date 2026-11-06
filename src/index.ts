@@ -1,4 +1,6 @@
-interface Env {
+import { handlePortal, type PortalEnv } from "./portal.js";
+
+interface Env extends PortalEnv {
   DB: D1Database;
   MEDIA: R2Bucket;
   ASSETS: Fetcher;
@@ -130,11 +132,15 @@ export default {
     const url = new URL(request.url);
 
     try {
+      if (env.PORTAL_MODE === "persistent") {
+        const response = await handlePortal(request, env);
+        if (response) return response;
+      }
       if (request.method === "GET" && url.pathname === "/api/health") {
-        return health(env);
+        return await health(env);
       }
       if (request.method === "GET" && url.pathname === "/api/catalog") {
-        return publicCatalog(env);
+        return await publicCatalog(env);
       }
       if (url.pathname.startsWith("/api/")) {
         return json({ error: "Nicht gefunden" }, { status: 404 });

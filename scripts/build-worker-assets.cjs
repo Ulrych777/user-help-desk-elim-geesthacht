@@ -9,8 +9,8 @@ const root = path.join(__dirname, ".."),
   target = path.join(targetDirectory, "index.html");
 
 fs.mkdirSync(targetDirectory, { recursive: true });
-// The complete preview preserves the prototype's admin UI and embedded data.
-// The API build remains available for incremental backend development.
+// The persistent portal starts from the complete initial content in D1.
+// The standalone prototype and legacy API build remain separate.
 const revision = execFileSync("git", ["rev-parse", "--short=12", "HEAD"], {
   cwd: root,
   encoding: "utf8",
@@ -18,7 +18,7 @@ const revision = execFileSync("git", ["rev-parse", "--short=12", "HEAD"], {
 const html = fs.readFileSync(source, "utf8");
 fs.writeFileSync(
   target,
-  (preview ? html : html.replace("<body>", '<body data-catalog-source="api">'))
+  html.replace("<body>", preview ? '<body data-catalog-source="portal">' : '<body data-catalog-source="api">')
     .replace("</head>", `  <meta name="serviceportal-build" content="${revision}">\n</head>`),
 );
 console.log(`Worker-Asset erstellt: ${path.relative(root, target)}`);
