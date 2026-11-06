@@ -46,7 +46,7 @@ Die Rekonstruktion übernimmt diese Anordnung und die zuletzt überarbeitete Fel
 
 ## Nächste Projektphasen
 
-1. Das Worker-/D1-/R2-Grundgerüst und die lesende öffentliche Katalog-API sind eingerichtet. Eine eigene Testumgebung ist unter `https://elim-serviceportal-test.glenn-ritter5994.workers.dev` veröffentlicht. Die Gemeinde-Domain bleibt bis zur Abnahme unverändert.
+1. Die vollständige Entwicklungsseite samt Admin-Vorschau liegt unter `https://serviceportal.glennritter.de` und wird aus GitHub `main` veröffentlicht. Feedback führt zu geprüften Quellcodeänderungen, Commit, Push und erneutem Deployment auf dieselbe Adresse. Das Worker-/D1-/R2-Grundgerüst und die lesende öffentliche Katalog-API sind separat unter `https://elim-serviceportal-test.glenn-ritter5994.workers.dev` eingerichtet. Die Gemeinde-Domain bleibt bis zur Abnahme unverändert.
 2. Die öffentliche Oberfläche ist an die Katalog-API angebunden. Als Nächstes folgen dauerhafte Verwaltung und Medien.
 3. Cloudflare Access für den IT-Adminbereich einrichten und alle Admin-Endpunkte serverseitig schützen.
 4. E-Mail-Weg auswählen und den vollständigen Anfrageablauf mit Queue, Anhängen, Wiederholungsversuchen und automatischer Löschung umsetzen.
@@ -54,4 +54,4 @@ Die Rekonstruktion übernimmt diese Anordnung und die zuletzt überarbeitete Fel
 6. Mit den zuständigen Teams auf Desktop und Smartphone testen: Zuständigkeit, Suchtreffer, Pflichtangaben, Bildverwaltung, Anhänge, Direktlinks und Datenschutz.
 7. Nach funktionaler Abnahme den gestalterischen Feinschliff durchführen und erst danach die Gemeinde-Domain umstellen. Regelmäßige Sicherungen, Zuständigkeiten und Wartung dokumentieren.
 
-Die Testseite lädt ihren öffentlichen Katalog aus D1. Die eigenständige Prototypdatei bleibt als Offline-Vorschau mit simulierten Abläufen erhalten. Produktiver Versand und geschützte Verwaltung folgen in den nächsten Phasen.
+Die vollständige Entwicklungsseite verwendet sämtliche eingebetteten Prototypdaten und bietet die Admin-Vorschau. Die separate API-Testseite lädt ihren Katalog aus D1. Die eigenständige Prototypdatei bleibt offline nutzbar. Produktiver Versand und geschützte, dauerhafte Verwaltung folgen in den nächsten Phasen.

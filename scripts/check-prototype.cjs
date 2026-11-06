@@ -11,7 +11,9 @@ const fs = require("node:fs"),
   crypto = require("node:crypto");
 (async () => {
   const root = require("node:path").resolve(__dirname, "../prototype");
-  const html = fs.readFileSync(root + "/index.html");
+  const html = fs.readFileSync(
+    process.env.PORTAL_PREVIEW_FILE || root + "/index.html",
+  );
   const server = http.createServer((req, res) => {
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.end(html);
@@ -35,7 +37,8 @@ const fs = require("node:fs"),
       viewport: { width: 1440, height: 1000 },
       locale: "de-DE",
     });
-    const base = "http://127.0.0.1:" + server.address().port;
+    const base = process.env.PORTAL_PREVIEW_URL ||
+      "http://127.0.0.1:" + server.address().port;
     await context.grantPermissions(["clipboard-read", "clipboard-write"], {
       origin: base,
     });

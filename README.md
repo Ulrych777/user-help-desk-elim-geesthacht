@@ -1,5 +1,19 @@
 # Elim Kirche Serviceportal
 
+**Vollständige Entwicklungsseite:** https://serviceportal.glennritter.de
+
+**Admin-Vorschau:** https://serviceportal.glennritter.de/#admin/areas
+
+Diese Adresse zeigt den vollständigen Prototyp aus GitHub `main` mit allen
+Bereichen, Formularen, Anleitungen und Admin-Editoren. Der Entwicklungsablauf ist:
+Feedback im Chat → Quellcode ändern → prüfen → Commit auf GitHub `main` →
+`npm run deploy:preview` → dieselbe Seite im Browser neu laden.
+GitHub-Pushes allein lösen kein automatisches Deployment aus.
+
+Änderungen am Code werden über diesen Ablauf dauerhaft veröffentlicht. Änderungen
+innerhalb der Admin-Vorschau gelten weiterhin nur bis zum Neuladen; Anmeldung,
+dauerhafte Verwaltung und echter E-Mail-Versand sind noch nicht umgesetzt.
+
 Rekonstruktion des gemeinsam entwickelten Oberflächenprototyps, Stand 5. November 2026. Die ursprünglichen Dateien vom 30./31. Oktober waren nach einem Wechsel der Cloud-Umgebung nicht mehr verfügbar und nicht in Git gesichert. Funktionen und Gestaltung wurden anhand des Gesprächsverlaufs neu aufgebaut. Das Original-Logo ist unverändert aus der bereitgestellten ZIP übernommen; die übrigen Illustrationen sind neu erstellt. Dies ist keine bytegenaue Wiederherstellung.
 
 ## Vorschau öffnen
@@ -19,9 +33,9 @@ Bei Bedarf lokal ausliefern: `python3 -m http.server 8000 --directory prototype`
 - Eigenes Bereichsbild unabhängig vom Symbol, vorhandenes Motiv oder Upload mit Kachelvorschau. Ein Bild ist zur Veröffentlichung erforderlich; unveröffentlichte Bereiche dürfen zunächst ohne Bild gespeichert werden.
 - Vereinheitlichte warme Formularfelder, dunkelblaue Auswahlzustände und passende Fokusmarkierungen. Der Footer bleibt auch bei kurzen Seiten am unteren Rand.
 
-**Entwicklungsstand:** Die Worker-Version lädt Bereiche, Kategorien, Anliegen, Formularfelder und Anleitungstexte aus D1 über `/api/catalog`. Die eigenständige Datei `prototype/index.html` verwendet weiterhin eingebettete Beispieldaten und bietet die unveränderte Admin-Vorschau. In der Worker-Version ist diese Vorschau ausgeblendet; eine Verwaltung mit Anmeldung und dauerhafter Speicherung fehlt noch. Ebenso fehlen Spam-Schutz und E-Mail-Versand. Anfragen werden weiterhin nur simuliert. Änderungen in der eigenständigen Admin-Vorschau und hinzugefügte Bilder gehen beim Neuladen verloren. Empfängeradressen unter `example.org` sind Beispiele. Die WLAN-Anleitung ist ein ungeprüfter Beispielinhalt und enthält keine echten Zugangsdaten.
+**Entwicklungsstand:** Die vollständige Entwicklungsseite (`preview`) und die eigenständige Datei `prototype/index.html` verwenden die eingebetteten Prototypdaten samt Admin-Vorschau. Die separate API-Version (`test`) lädt Bereiche, Kategorien, Anliegen, Formularfelder und Anleitungstexte aus D1 über `/api/catalog`; dort ist die Admin-Vorschau ausgeblendet. Eine Verwaltung mit Anmeldung und dauerhafter Speicherung fehlt noch. Ebenso fehlen Spam-Schutz und E-Mail-Versand. Anfragen werden weiterhin nur simuliert. Änderungen in der Admin-Vorschau und hinzugefügte Bilder gehen beim Neuladen verloren. Empfängeradressen unter `example.org` sind Beispiele. Die WLAN-Anleitung ist ein ungeprüfter Beispielinhalt und enthält keine echten Zugangsdaten.
 
-Der Worker-Build kennzeichnet seine HTML-Datei mit `data-catalog-source="api"`. Bis zum Laden zeigt die Oberfläche einen Ladehinweis. Fehler bieten einen Wiederholungsbutton; es gibt keinen Rückfall auf eingebettete Beispieldaten. Ein leerer Katalog zeigt einen Leerzustand. Die drei bestehenden Bereichsbilder werden über ihre bekannten `image_key`-Werte den eingebetteten Motiven zugeordnet. Eigene R2-Bilder und Anleitungsbilder aus D1 sind noch nicht angebunden.
+Der separate API-Build kennzeichnet seine HTML-Datei mit `data-catalog-source="api"`. Bis zum Laden zeigt die Oberfläche einen Ladehinweis. Fehler bieten einen Wiederholungsbutton; es gibt keinen Rückfall auf eingebettete Beispieldaten. Ein leerer Katalog zeigt einen Leerzustand. Die drei bestehenden Bereichsbilder werden über ihre bekannten `image_key`-Werte den eingebetteten Motiven zugeordnet. Eigene R2-Bilder und Anleitungsbilder aus D1 sind noch nicht angebunden. Der vollständige Preview-Build setzt diese API-Markierung nicht und erhält sämtliche eingebetteten Inhalte.
 
 Anfrageanhänge: höchstens drei Dateien mit zusammen 10 MB, JPG/PNG/WebP/PDF. Eigene Bereichsbilder: transparente PNG-/WebP-Dateien bis 5 MB; der Editor vereinheitlicht sie auf eine transparente Leinwand mit 1536 × 1024 Pixeln. Im Editor eines Bereichs kann ausschließlich dessen aktuelles Bild als Stilvorlage heruntergeladen oder ersetzt werden. Anleitungsbilder: höchstens fünf Bilder mit je 5 MB, einschließlich Bildbeschreibung, optionaler Bildunterschrift und Absatzposition. Die Bildlesbarkeit wird im Browser geprüft; verbindliche serverseitige Prüfungen gehören zur späteren Anwendung.
 
@@ -48,7 +62,38 @@ Wrangler stellt die Anwendung standardmäßig unter `http://localhost:8787` bere
 
 `npm run check` baut Website und Worker, prüft TypeScript und führt eine Cloudflare-Trockenprüfung aus. Für die öffentliche Testumgebung wird `npm run deploy:test` verwendet. Der allgemeine Befehl `npm run deploy` enthält weiterhin lokale Ressourcen-Platzhalter und ist kein Produktionsdeployment. Zugangsdaten werden als Cloudflare-Secrets oder geschützte Umgebungsvariablen hinterlegt und niemals in Git gespeichert.
 
-## Öffentliche Testumgebung und Weiterentwicklung
+## Vollständige Entwicklungsseite veröffentlichen
+
+Die Wrangler-Umgebung `preview` betreibt `elim-serviceportal-preview` mit der
+Custom Domain `serviceportal.glennritter.de`. Cloudflare verwaltet DNS und TLS
+für diese Domain. Die Assets liegen im ignorierten Buildverzeichnis
+`public-preview/`; die bearbeitbaren Quellen bleiben unter `prototype/`.
+
+```bash
+npm run check:preview
+PORTAL_PREVIEW_FILE=public-preview/index.html node scripts/check-prototype.cjs
+git add <bearbeitete-Dateien>
+git commit -m "Änderung beschreiben"
+git push origin main
+npm run deploy:preview
+```
+
+Der letzte Befehl baut und prüft die vollständige Vorschau, prüft den sauberen
+Git-Stand gegen GitHub `main` und veröffentlicht genau diesen Stand. Die
+HTML-Metadaten `serviceportal-build` enthalten den Commit der Bereitstellung.
+Mit freigegebener Domain kann die gesamte Browserprüfung auch gegen die
+veröffentlichte Seite laufen:
+
+```bash
+PORTAL_PREVIEW_URL=https://serviceportal.glennritter.de node scripts/check-prototype.cjs
+```
+
+Die Vorschau nutzt für die lesenden API-Endpunkte die vorhandenen
+Test-D1-/R2-Bindings; ihre Oberfläche und Admin-Editoren verwenden bewusst den
+vollständigen eingebetteten Datenstand. Ein Preview-Deployment ändert keine
+Datenbankeinträge.
+
+## Separate API-Testumgebung
 
 Testseite: **https://elim-serviceportal-test.glenn-ritter5994.workers.dev**
 

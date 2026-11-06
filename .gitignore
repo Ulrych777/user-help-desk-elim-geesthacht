@@ -1,6 +1,7 @@
 backups/
 node_modules/
 public/
+public-preview/
 .wrangler/
 .dev.vars
 .DS_Store
