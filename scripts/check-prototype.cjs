@@ -61,6 +61,30 @@ const fs = require("node:fs"),
     await page.goto(base + "/?preview=1#home");
     await pictures();
     assert.equal(await page.locator(".area-card").count(), 3);
+    const areaImageMetrics = await page.locator(".area-art").evaluateAll(
+      (frames) =>
+        frames.map((frame) => {
+          const image = frame.querySelector("img"),
+            rect = frame.getBoundingClientRect();
+          return {
+            width: Math.round(rect.width),
+            height: Math.round(rect.height),
+            naturalWidth: image.naturalWidth,
+            naturalHeight: image.naturalHeight,
+            objectFit: getComputedStyle(image).objectFit,
+          };
+        }),
+    );
+    assert(
+      areaImageMetrics.every(
+        (metric) =>
+          metric.width === areaImageMetrics[0].width &&
+          metric.height === areaImageMetrics[0].height &&
+          metric.naturalWidth === 1536 &&
+          metric.naturalHeight === 1024 &&
+          metric.objectFit === "contain",
+      ),
+    );
     assert.equal(await page.locator(".request-card").count(), 0);
     assert.equal(
       await page
@@ -231,6 +255,37 @@ const fs = require("node:fs"),
       "Bereichssuche und Kategorien, Anleitung mit Bild und Kontaktfeldern, simulierter Versand und drei Uploadgrenzen.",
     );
     await visit("admin/area/new");
+    const libraryDownloads = page.locator(
+      ".area-image-library a[download]",
+    );
+    assert.equal(await libraryDownloads.count(), 3);
+    assert.deepEqual(
+      await libraryDownloads.evaluateAll((links) =>
+        links.map((link) => ({
+          type: link.href.slice(0, 16),
+          filename: link.getAttribute("download"),
+        })),
+      ),
+      [
+        { type: "data:image/webp;", filename: "Elim-Bereich-IT.webp" },
+        {
+          type: "data:image/webp;",
+          filename: "Elim-Bereich-Haus-und-Hof.webp",
+        },
+        {
+          type: "data:image/webp;",
+          filename: "Elim-Bereich-Finanzbuchhaltung.webp",
+        },
+      ],
+    );
+    const downloadPromise = page.waitForEvent("download");
+    await libraryDownloads.first().click();
+    const downloadedImage = await downloadPromise;
+    assert.equal(downloadedImage.suggestedFilename(), "Elim-Bereich-IT.webp");
+    assert.equal(
+      fs.readFileSync(await downloadedImage.path()).subarray(0, 4).toString(),
+      "RIFF",
+    );
     await page.locator("#area-name").fill("Veranstaltungen");
     await page
       .locator("#area-description")
@@ -296,7 +351,7 @@ const fs = require("node:fs"),
         "Das Bild konnte nicht gelesen werden. Bitte verwende eine gültige Bilddatei.",
       )
       .waitFor();
-    const png = Buffer.from(
+    const opaquePng = Buffer.from(
       await page.evaluate(() => {
         const c = document.createElement("canvas");
         c.width = 320;
@@ -310,10 +365,43 @@ const fs = require("node:fs"),
     );
     await page
       .locator("#area-image-file")
-      .setInputFiles({ name: "test.png", mimeType: "image/png", buffer: png });
+      .setInputFiles({
+        name: "ohne-transparenz.png",
+        mimeType: "image/png",
+        buffer: opaquePng,
+      });
+    await page
+      .getByText(
+        "Das Bereichsbild benötigt einen transparenten Hintergrund. Verwende bitte ein freigestelltes PNG oder WebP.",
+      )
+      .waitFor();
+    const png = Buffer.from(
+      await page.evaluate(() => {
+        const c = document.createElement("canvas");
+        c.width = 320;
+        c.height = 200;
+        const ctx = c.getContext("2d");
+        ctx.fillStyle = "#eae5dd";
+        ctx.fillRect(20, 20, 280, 160);
+        return c.toDataURL("image/png").split(",")[1];
+      }),
+      "base64",
+    );
+    await page.locator("#area-image-file").setInputFiles({
+      name: "test.png",
+      mimeType: "image/png",
+      buffer: png,
+    });
     await page.waitForFunction(
       () =>
-        document.querySelector("#area-image-preview img")?.naturalWidth === 320,
+        document.querySelector("#area-image-preview img")?.naturalWidth ===
+          1536 &&
+        document.querySelector("#area-image-preview img")?.naturalHeight ===
+          1024,
+    );
+    assert.equal(
+      await page.locator("#download-area-image").getAttribute("download"),
+      "test-transparent-1536x1024.png",
     );
     await save();
     await page.waitForURL("**/#admin/areas");
@@ -322,7 +410,7 @@ const fs = require("node:fs"),
       await page
         .locator(".area-banner-art img")
         .evaluate((el) => el.naturalWidth),
-      320,
+      1536,
     );
     await visit(editRoute);
     await page.locator("#remove-area-image").click();
@@ -334,10 +422,10 @@ const fs = require("node:fs"),
       await page
         .locator(".area-banner-art img")
         .evaluate((el) => el.naturalWidth),
-      320,
+      1536,
     );
     pass(
-      "Bereichsentwürfe ohne Bild, Bildpflicht beim Veröffentlichen, unabhängiges Symbol, eigener geprüfter Upload und Abbrechen ohne Datenänderung.",
+      "Bereichsentwürfe ohne Bild, Bildpflicht beim Veröffentlichen, Stilvorlagen-Download, transparenter vereinheitlichter Upload und Abbrechen ohne Datenänderung.",
     );
     await visit("admin/form/new");
     await page.locator("#form-title").fill("Selbsthilfe im Saal");
