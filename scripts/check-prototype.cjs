@@ -441,9 +441,13 @@ const fs = require("node:fs"),
       .fill("Eine neue Beispielanleitung.");
     await page.locator("#form-type").selectOption("guide");
     assert(await page.locator("#form-settings").evaluate((el) => el.disabled));
-    await page.locator('[data-guide-command="h2"]').click();
+    await page.locator("#guide-format").click();
+    await page.getByRole("option", { name: "Überschrift 1", exact: true }).click();
+    await page.waitForFunction(() => document.activeElement?.id === "guide-text");
     await page.locator("#guide-text").pressSequentially("Erster Schritt.");
+    assert.equal(await page.locator("#guide-format").inputValue(), "h2");
     await page.keyboard.press("Enter");
+    assert.equal(await page.locator("#guide-format").inputValue(), "paragraph");
     await page.locator('[data-guide-command="bold"]').click();
     await page.keyboard.insertText("Zweiter Absatz.");
     await page.locator('[data-guide-command="bold"]').click();

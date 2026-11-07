@@ -1406,9 +1406,31 @@ let currentGuideEditor = null;
 function guideImageRow(image) {
   return `<div class="field-row guide-image-editor" data-guide-image="${esc(image.id)}"><img src="${esc(guideImageSource(image.src))}" alt="Vorschau des Anleitungsbildes"><label class="field"><span>Bildbeschreibung für die Barrierefreiheit *</span><input data-image-property="alt" value="${esc(image.alt)}" required maxlength="300"></label><label class="field"><span>Bildunterschrift (optional)</span><input data-image-property="caption" value="${esc(image.caption)}" maxlength="300"></label><div class="actions"><button class="btn secondary" data-insert-image type="button">An Textposition einfügen</button><button class="btn ghost" data-remove-image type="button">Bild löschen</button></div></div>`;
 }
+function guideToolbarIcon(command) {
+  const paths = {
+    undo: '<path d="M9 5 4 10l5 5M4 10h10a6 6 0 0 1 0 12" transform="translate(0 -3)"/>',
+    redo: '<path d="m15 5 5 5-5 5m5-5H10a6 6 0 0 0 0 12" transform="translate(0 -3)"/>',
+    bulletList: '<circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/><path d="M9 6h11M9 12h11M9 18h11"/>',
+    orderedList: '<path d="M10 6h10M10 12h10M10 18h10M3 3h1v6M3 9h2M3 14c0-2 3-2 3 0 0 1-3 2-3 4h3"/>',
+    blockquote: '<path d="M10 6H4v6h6V6Zm10 0h-6v6h6V6ZM10 12c0 4-2 6-5 7m15-7c0 4-2 6-5 7"/>',
+    link: '<path d="m10 13 4-4m-6 6-2 2a4 4 0 0 1-6-6l5-5a4 4 0 0 1 6 0m2 2 2-2a4 4 0 0 1 6 6l-5 5a4 4 0 0 1-6 0" transform="translate(1 1)"/>',
+    image: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8" cy="8" r="1.5"/><path d="m21 15-5-5L5 21"/>',
+    clear: '<path d="M4 4h14M11 4l-4 14m8-4 6 6m0-6-6 6"/>'
+  };
+  if (["bold", "italic", "underline"].includes(command)) return `<span aria-hidden="true" class="guide-letter ${command}">${{bold:"B",italic:"I",underline:"U"}[command]}</span>`;
+  return `<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${paths[command] || ""}</svg>`;
+}
 function guideEditorMarkup() {
-  const commands = [["bold", "Fett"], ["italic", "Kursiv"], ["underline", "Unterstrichen"], ["h2", "Überschrift"], ["h3", "Zwischenüberschrift"], ["bulletList", "Aufzählung"], ["orderedList", "Nummerierte Liste"], ["blockquote", "Zitat"], ["link", "Link"], ["clear", "Formatierung entfernen"], ["undo", "Rückgängig"], ["redo", "Wiederholen"]];
-  return `<div class="field"><span id="guide-editor-label">Anleitungstext *</span><p id="guide-editor-help" class="help">Schreibe und formatiere deine Anleitung. Setze den Cursor an die gewünschte Stelle, bevor du ein Bild hochlädst oder einfügst. Bilder lassen sich im Text nach oben und unten verschieben.</p><div class="guide-editor-shell"><div id="guide-toolbar" class="guide-toolbar" role="group" aria-label="Text formatieren">${commands.map(([command, label]) => `<button class="btn secondary" type="button" data-guide-command="${command}" aria-label="${label}" title="${label}">${esc(label)}</button>`).join("")}<button class="btn secondary" type="button" id="guide-upload">Bild hochladen</button></div><div id="guide-editor"></div></div><div id="guide-link-editor" class="guide-link-editor" hidden><label class="field"><span>Link-Adresse</span><input id="guide-link-url" type="text" inputmode="url" placeholder="https://…" maxlength="2000"></label><div class="actions"><button class="btn secondary" id="guide-link-apply" type="button">Link übernehmen</button><button class="btn ghost" id="guide-link-remove" type="button">Link entfernen</button><button class="btn ghost" id="guide-link-cancel" type="button">Abbrechen</button></div><p id="guide-link-error" role="alert" class="small"></p></div><p id="guide-text-count" class="help" aria-live="polite"></p></div>`;
+  const button = (command, label) => `<button class="btn secondary guide-tool" type="button" data-guide-command="${command}" aria-label="${label}" title="${label}">${guideToolbarIcon(command)}</button>`;
+  const group = (label, content) => `<div class="guide-tool-group" role="group" aria-label="${label}">${content}</div>`;
+  const toolbar =
+    group("Verlauf", button("undo", "Rückgängig") + button("redo", "Wiederholen")) +
+    group("Absatzformat", '<select id="guide-format" aria-label="Absatzformat" title="Absatzformat"><option value="paragraph">Absatz</option><option value="h2">Überschrift 1</option><option value="h3">Überschrift 2</option></select>') +
+    group("Schriftformatierung", button("bold", "Fett") + button("italic", "Kursiv") + button("underline", "Unterstrichen")) +
+    group("Listen und Zitat", button("bulletList", "Aufzählung") + button("orderedList", "Nummerierte Liste") + button("blockquote", "Zitat")) +
+    group("Einfügen", button("link", "Link") + `<button class="btn secondary guide-tool" type="button" id="guide-upload" aria-label="Bild hochladen" title="Bild hochladen">${guideToolbarIcon("image")}</button>`) +
+    group("Formatierung", button("clear", "Formatierung entfernen"));
+  return `<div class="field"><span id="guide-editor-label">Anleitungstext *</span><p id="guide-editor-help" class="help">Schreibe und formatiere deine Anleitung. Setze den Cursor an die gewünschte Stelle, bevor du ein Bild hochlädst oder einfügst. Bilder lassen sich im Text nach oben und unten verschieben.</p><div class="guide-editor-shell"><div id="guide-toolbar" class="guide-toolbar" role="group" aria-label="Text formatieren">${toolbar}</div><div id="guide-editor"></div></div><div id="guide-link-editor" class="guide-link-editor" hidden><label class="field"><span>Link-Adresse</span><input id="guide-link-url" type="text" inputmode="url" placeholder="https://…" maxlength="2000"></label><div class="actions"><button class="btn secondary" id="guide-link-apply" type="button">Link übernehmen</button><button class="btn ghost" id="guide-link-remove" type="button">Link entfernen</button><button class="btn ghost" id="guide-link-cancel" type="button">Abbrechen</button></div><p id="guide-link-error" role="alert" class="small"></p></div><p id="guide-text-count" class="help" aria-live="polite"></p></div>`;
 }
 function renderFormEditor(id) {
   const existing = forms.find((form) => form.id === id);

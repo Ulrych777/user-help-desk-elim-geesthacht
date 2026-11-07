@@ -80,6 +80,7 @@ function create({ element, toolbar, content, images, source, onChange, openLink 
     onSelectionUpdate: () => updateToolbar()
   });
   function updateToolbar() {
+    toolbar.querySelector('#guide-format').value = editor.isActive('heading', { level: 2 }) ? 'h2' : editor.isActive('heading', { level: 3 }) ? 'h3' : 'paragraph';
     toolbar.querySelectorAll('[data-guide-command]').forEach(button => {
       const name = button.dataset.guideCommand;
       const active = name === 'h2' || name === 'h3' ? editor.isActive('heading', { level: Number(name.slice(1)) }) : editor.isActive(name);
@@ -87,6 +88,12 @@ function create({ element, toolbar, content, images, source, onChange, openLink 
       if (name === 'undo' || name === 'redo') button.disabled = !editor.can()[name]();
     });
   }
+  toolbar.querySelector('#guide-format').addEventListener('change', event => {
+    const format = event.target.value;
+    const chain = editor.chain().focus();
+    if (format === 'paragraph') chain.setParagraph().run();
+    else chain.setHeading({ level: Number(format.slice(1)) }).run();
+  });
   toolbar.querySelectorAll('[data-guide-command]').forEach(button => {
     button.addEventListener('mousedown', event => event.preventDefault());
     button.addEventListener('click', () => {

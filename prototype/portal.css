@@ -1322,22 +1322,59 @@ main[data-view="home"] ~ footer {
 }
 .guide-toolbar {
   display: flex;
+  align-items: center;
   flex-wrap: wrap;
-  gap: 6px;
-  padding: 12px;
+  gap: 6px 0;
+  padding: 7px 8px;
   border-bottom: 1px solid var(--line-warm);
-  background: #f3eee5;
+  background: #f3f0ea;
+}
+.guide-tool-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 6px;
+}
+.guide-tool-group + .guide-tool-group {
+  border-left: 1px solid var(--line-warm);
 }
 .guide-toolbar .btn {
-  min-height: 38px;
-  padding: 6px 10px;
-  font-size: var(--text-small);
+  flex: none;
+  width: 34px;
+  height: 34px;
+  min-height: 34px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--deep);
+  font-size: 18px;
   box-shadow: none;
 }
+.guide-toolbar .btn:hover:not(:disabled) {
+  border-color: #cbd4dc;
+  background: #e4eaf0;
+  transform: none;
+}
 .guide-toolbar .btn[aria-pressed="true"] {
-  background: var(--deep);
-  border-color: var(--deep);
-  color: white;
+  border-color: #8da5b9;
+  background: #dbe6ef;
+  color: var(--deep);
+}
+.guide-toolbar .btn:disabled { opacity: .35; }
+.guide-letter { font-size: 19px; line-height: 1; font-weight: 700; }
+.guide-letter.italic { font-style: italic; font-weight: 500; }
+.guide-letter.underline { text-decoration: underline; text-underline-offset: 3px; font-weight: 500; }
+#guide-format {
+  width: 150px;
+  min-height: 34px;
+  height: 34px;
+  padding: 4px 10px;
+  border: 1px solid #cfc8bc;
+  border-radius: 5px;
+  background-color: #fffdf9;
+  font-size: var(--text-small);
+  box-shadow: none;
 }
 #guide-text {
   min-height: 320px;

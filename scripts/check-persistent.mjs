@@ -331,9 +331,12 @@ try {
   await page.keyboard.press("Control+Home");
   await page.keyboard.press("Enter");
   await page.keyboard.press("ArrowUp");
-  await page.locator('[data-guide-command="h2"]').click();
+  await page.locator("#guide-format").click();
+  await page.getByRole("option", { name: "Überschrift 1", exact: true }).click();
+  await page.waitForFunction(() => document.activeElement?.id === "guide-text");
   await page.keyboard.insertText("Vorbereitung");
   await page.keyboard.press("Control+End");
+  await page.waitForFunction(() => document.querySelector("#guide-format").value === "paragraph");
   await page.keyboard.press("Enter");
   await page.locator('[data-guide-command="bulletList"]').click();
   await page.keyboard.insertText("Schritt prüfen");
@@ -351,7 +354,15 @@ try {
   await page.locator("#guide-link-url").fill("https://developers.cloudflare.com/");
   await page.locator("#guide-link-apply").click();
   await page.locator("#guide-text > p").first().click();
-  await page.keyboard.press("End");
+  // End moves to the end of a visual line; place the cursor after the whole
+  // paragraph so this insertion assertion is independent of toolbar wrapping.
+  await page.locator("#guide-text > p").first().evaluate(paragraph => {
+    const range = document.createRange();
+    range.selectNodeContents(paragraph); range.collapse(false);
+    const selection = window.getSelection();
+    selection.removeAllRanges(); selection.addRange(range);
+    document.dispatchEvent(new Event("selectionchange"));
+  });
   const beforeImage = await page.locator("#guide-text > p").first().textContent();
   await page.locator("#guide-image-files").setInputFiles({ name: "guide.png", mimeType: "image/png", buffer: Buffer.from(buffer, "base64") });
   const addedImage = page.locator(".guide-image-editor").nth(1);
