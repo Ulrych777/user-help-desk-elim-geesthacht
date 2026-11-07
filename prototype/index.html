@@ -2093,13 +2093,7 @@ function renderSearchResults() {
   $("result-count").textContent = `${matches.length} Anliegen gefunden`;
   $("results").innerHTML = matches.length
     ? requestCards(matches)
-    : `<div class="empty"><h3>Kein passendes Anliegen gefunden</h3><p>Versuche einen anderen Suchbegriff oder wähle eine allgemeine Anfrage.</p>${publicForms()
-        .filter((form) => form.id.endsWith("-allgemein"))
-        .map(
-          (form) =>
-            `<p><a href="#form/${esc(form.id)}">${esc(form.title)}</a></p>`,
-        )
-        .join("")}</div>`;
+    : '<div class="empty"><h3>Kein passendes Anliegen gefunden</h3><p>Versuche einen anderen Suchbegriff.</p></div>';
 }
 function renderArea(areaId) {
   const area = areaById(areaId);
