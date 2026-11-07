@@ -1,5 +1,7 @@
 # Gestaltung des Elim Kirche Serviceportals
 
+Nach erfolgreicher Annahme durch den Versanddienst zeigt die Sendebestätigung eine Briefillustration mit orangefarbenem Häkchen und „Deine Anfrage ist auf dem Weg!“. Der Brief gleitet einmal kurz ins Bild; bei „Bewegung reduzieren“ bleibt er statisch. Bereichsmotive bewegen sich beim Darüberfahren leicht, ausschließlich mit Maus und ohne reduzierte Bewegung. Versandstatus, Vorgangsnummer und Antwort per E-Mail bleiben klar erkennbar.
+
 Die Kennzeichnungen „Anleitung“, „Entwurf“ und „Inaktiv“ verwenden eine hellorange Fläche mit dunkler orangebrauner Schrift. „Veröffentlicht“ und „Aktiv“ verwenden dieselben blauen Farben wie „Formular“. Das gilt für Anliegen, Bereiche und Administratorkonten; der Anleitungstag ist auch in der dunkelblauen Kopfkachel orange.
 
 Der orangefarbene Akzent aus den Illustrationen erscheint als kurze, 3 px hohe Linie unter den Titeln der dunkelblauen Bereichsbanner und Kopfkacheln für Formulare, Anleitungen und Verwaltung. Die Linie ist rein dekorativ. Schaltflächen verwenden wieder die bisherigen dunkelblauen und cremefarbenen Varianten.

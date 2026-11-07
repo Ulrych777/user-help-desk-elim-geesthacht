@@ -330,7 +330,7 @@ try {
   for (let i = 0; !holdProvider && i < 100; i++) await new Promise(resolve => setTimeout(resolve, 10));
   assert(holdProvider);
   holdProvider();
-  await page.getByRole("heading", { name: "Deine Anfrage wurde übergeben.", exact: true }).waitFor();
+  await page.getByRole("heading", { name: "Deine Anfrage ist auf dem Weg!", exact: true }).waitFor();
   assert.equal(delivered.size, beforeBrowser + 1);
   assert(providerCalls.at(-1).payload.text.includes("Browser Test"));
   assert.equal(providerCalls.at(-1).payload.reply_to, "browser@example.test");
@@ -351,7 +351,7 @@ try {
   const callsAfterLoss = providerCalls.length;
   connectionMode = 'normal';
   await page.getByRole('button', { name: 'Anfrage senden', exact: true }).click();
-  await page.getByRole('heading', { name: 'Deine Anfrage wurde übergeben.', exact: true }).waitFor();
+  await page.getByRole('heading', { name: 'Deine Anfrage ist auf dem Weg!', exact: true }).waitFor();
   assert.equal(delivered.size, deliveredBeforeLoss + 1);
   assert.equal(providerCalls.length, callsAfterLoss);
   assert.equal(attemptIds.at(-1), attemptIds.at(-2));
@@ -375,7 +375,7 @@ try {
   assert.equal(await page.locator('#request-name').inputValue(), 'PNG-Anhang');
   await page.locator('#request-files').setInputFiles(diskImage);
   await page.getByRole('button', { name: 'Anfrage senden', exact: true }).click();
-  await page.getByRole('heading', { name: 'Deine Anfrage wurde übergeben.', exact: true }).waitFor();
+  await page.getByRole('heading', { name: 'Deine Anfrage ist auf dem Weg!', exact: true }).waitFor();
   assert.deepEqual(Buffer.from(providerCalls.at(-1).payload.attachments[0].content, 'base64'), diskBytes);
   assert.equal(providerCalls.at(-1).payload.attachments[0].filename, path.basename(diskImage));
   providerMode = "success";
@@ -383,7 +383,7 @@ try {
   await page.locator("#request-email").fill("guide@example.test");
   await page.locator("#request-description").fill("Rückfrage aus der Anleitung");
   await page.getByRole("button", { name: "Nachricht senden", exact: true }).click();
-  await page.getByRole("heading", { name: "Deine Anfrage wurde übergeben.", exact: true }).waitFor();
+  await page.getByRole("heading", { name: "Deine Anfrage ist auf dem Weg!", exact: true }).waitFor();
   assert(providerCalls.at(-1).payload.text.includes("Rückfrage zur Anleitung"));
   assert.deepEqual(errors, []);
   pass("browser error retains inputs/files; retry and double-click protection; actual success state for forms and guides");
