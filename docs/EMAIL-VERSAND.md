@@ -73,6 +73,21 @@ die Erfolgsmeldung. Das ist keine Garantie für die spätere Postfachzustellung.
 Es gibt keine dauerhafte Versandqueue. Bei Ausfall oder Zeitüberschreitung bleiben
 Eingaben und Dateien im Browser erhalten und können erneut versucht werden.
 
+Browser-Verbindungsfehler („Failed to fetch“), Zeitüberschreitungen und ungültige
+Serverantworten werden als unbestätigter Versand auf Deutsch angezeigt. HTML-
+Fehlerseiten zeigen HTTP-Status und, sofern verfügbar, Cloudflares Ray-ID. Eine
+Erfolgsmeldung verlangt `accepted: true` und eine gültige Vorgangsnummer. Beim
+erneuten Senden bleibt dieselbe Anfragekennung bestehen, auch wenn die Antwort
+nach bereits erfolgreichem Versand verloren ging.
+
+Anhänge werden vor dem Upload im Browser gelesen und als Speicher-Kopie gesendet.
+Ist eine lokale Datei zwischenzeitlich verändert oder nicht mehr lesbar, fordert
+die Oberfläche zum erneuten Auswählen auf; die übrigen Eingaben bleiben erhalten.
+Das erneute Auswählen derselben Datei oder Abbrechen des Dateiauswahldialogs darf
+nicht den übergeordneten Formulardialog schließen. Ein Browsertest prüft das mit
+einer auf dem Dateisystem nach der Auswahl veränderten 200-KB-PNG sowie mit
+abgebrochenen Uploads und verlorenen Bestätigungen.
+
 Eine stabile Anfrage-UUID wird als Resend-Idempotency-Key verwendet. D1 enthält
 nur UUID, Eingabefingerabdruck, Versandstatus, Provider-ID, Erstellungszeit und
 eine technische Vorlagenversion.

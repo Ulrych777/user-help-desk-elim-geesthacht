@@ -807,7 +807,6 @@ function renderRequest(formId) {
       data.set("fields", JSON.stringify(fields));
       data.set("website", requestForm.elements.namedItem("website").value);
       data.set("turnstileToken", verificationToken);
-      files.forEach(file => data.append("files", file));
       const controls = Array.from(requestForm.querySelectorAll("input, textarea, select, button"));
       const disabled = controls.map(control => control.disabled);
       const button = requestForm.querySelector('button[type="submit"]'), label = button.innerHTML;
@@ -815,11 +814,27 @@ function renderRequest(formId) {
       controls.forEach(control => { control.disabled = true; });
       button.textContent = "Wird gesendet …";
       try {
+        // Send memory-backed snapshots rather than lazy references to local
+        // files, which Chromium can reject as ERR_UPLOAD_FILE_CHANGED.
+        for (const file of files) {
+          let bytes;
+          try { bytes = await file.arrayBuffer(); }
+          catch { throw new Error("Die Datei „" + file.name + "“ konnte nicht gelesen werden. Bitte wähle sie erneut aus. Deine übrigen Angaben bleiben erhalten."); }
+          data.append("files", new File([bytes], file.name, { type: file.type }));
+        }
         const response = await fetch("/api/requests", {
           method: "POST", body: data, signal: AbortSignal.timeout(30000),
         });
+        const retryHint = "Deine Eingaben und Dateien bleiben erhalten. Bitte mit denselben Angaben erneut versuchen.";
+        if (!response.headers.get("content-type")?.includes("application/json")) {
+          const ray = response.headers.get("cf-ray");
+          const support = ray && /^[a-z0-9-]{1,80}$/i.test(ray) ? " Fehlerkennung: " + ray + "." : "";
+          throw new Error("Das Serviceportal hat keine gültige Versandbestätigung geliefert (HTTP " + response.status + ")." + support + " " + retryHint);
+        }
         const result = await response.json();
-        if (!response.ok || !result.accepted) throw new Error(result.error || "Der Versand konnte nicht bestätigt werden.");
+        if (!response.ok) throw new Error(typeof result?.error === "string" ? result.error : "Der Versand konnte nicht bestätigt werden. " + retryHint);
+        if (result?.accepted !== true || typeof result.reference !== "string" || !/^SP-[A-F0-9]{8}-[A-F0-9]{4}$/.test(result.reference))
+          throw new Error("Das Serviceportal hat keine gültige Versandbestätigung geliefert. " + retryHint);
         confirmation = { form: form.id, reference: result.reference, accepted: true };
         requestForm.reset();
         delete slot.dataset.form;
@@ -827,9 +842,14 @@ function renderRequest(formId) {
         delete slot.dataset.widget;
         location.hash = "bestaetigung";
       } catch (sendError) {
-        error.textContent = sendError.name === "TimeoutError"
-          ? "Der Versand konnte noch nicht bestätigt werden. Bitte mit denselben Angaben erneut versuchen."
-          : sendError.message || "Der Versand ist fehlgeschlagen. Bitte erneut versuchen.";
+        const retryHint = "Deine Eingaben und Dateien bleiben erhalten. Bitte mit denselben Angaben erneut versuchen.";
+        error.textContent = ["TimeoutError", "AbortError"].includes(sendError.name)
+          ? "Der Versand dauert länger als erwartet und konnte noch nicht bestätigt werden. " + retryHint
+          : sendError instanceof TypeError
+            ? "Beim Senden konnte keine Verbindung zum Serviceportal hergestellt werden. Der Versand konnte nicht bestätigt werden. " + retryHint
+            : sendError instanceof SyntaxError
+              ? "Das Serviceportal hat keine gültige Versandbestätigung geliefert. " + retryHint
+              : sendError.message || "Der Versand konnte nicht bestätigt werden. " + retryHint;
         verificationToken = "";
         if (slot.dataset.widget && window.turnstile) window.turnstile.reset(slot.dataset.widget);
       } finally {
@@ -919,6 +939,9 @@ const dismissDialog = () => {
 };
 $("close-request-dialog").addEventListener("click", dismissDialog);
 dialog.addEventListener("cancel", (event) => {
+  // File pickers also emit a bubbling cancel event when the same file is
+  // selected again. Only the dialog's own Escape event should close it.
+  if (event.target !== dialog) return;
   event.preventDefault();
   dismissDialog();
 });
