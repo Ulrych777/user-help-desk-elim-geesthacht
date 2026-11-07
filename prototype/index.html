@@ -647,11 +647,11 @@ main[data-view="home"] {
 }
 .tag.guide,
 .page-heading.dark .tag.guide,
-.status {
+.status.off {
   background: var(--tag-orange-bg);
   color: var(--tag-orange-ink);
 }
-.status.off {
+.status:not(.off) {
   background: var(--tag-blue-bg);
   color: var(--tag-blue-ink);
 }

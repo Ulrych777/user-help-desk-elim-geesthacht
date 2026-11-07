@@ -1,6 +1,6 @@
 # Gestaltung des Elim Kirche Serviceportals
 
-Die Kennzeichnungen „Anleitung“, „Veröffentlicht“ und „Aktiv“ verwenden eine hellorange Fläche mit dunkler orangebrauner Schrift. „Entwurf“ und „Inaktiv“ verwenden dieselben blauen Farben wie „Formular“. Das gilt für Anliegen, Bereiche und Administratorkonten; der Anleitungstag ist auch in der dunkelblauen Kopfkachel orange.
+Die Kennzeichnungen „Anleitung“, „Entwurf“ und „Inaktiv“ verwenden eine hellorange Fläche mit dunkler orangebrauner Schrift. „Veröffentlicht“ und „Aktiv“ verwenden dieselben blauen Farben wie „Formular“. Das gilt für Anliegen, Bereiche und Administratorkonten; der Anleitungstag ist auch in der dunkelblauen Kopfkachel orange.
 
 Der orangefarbene Akzent aus den Illustrationen erscheint als kurze, 3 px hohe Linie unter den Titeln der dunkelblauen Bereichsbanner und Kopfkacheln für Formulare, Anleitungen und Verwaltung. Die Linie ist rein dekorativ. Schaltflächen verwenden wieder die bisherigen dunkelblauen und cremefarbenen Varianten.
 
