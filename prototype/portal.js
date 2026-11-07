@@ -1,5 +1,5 @@
 "use strict";
-// Rekonstruktion des Oberflächenprototyps. Keine Anmeldung, Speicherung oder E-Mail-Anbindung.
+// Shared interface: persistent portal with server APIs, or standalone offline demo.
 const $ = (id) => document.getElementById(id);
 const app = $("main-content"),
   dialog = $("request-dialog"),
@@ -1923,7 +1923,6 @@ async function loadPortal() {
     adminEmail = state.email || "";
     mailSettings = state.submission || { enabled: false, siteKey: "" };
     defaultRecipient = state.defaultRecipient || "";
-    document.querySelector(".prototype-note").textContent = "Serviceportal · Testbetrieb";
     areas.splice(0, areas.length, ...state.areas);
     forms.splice(0, forms.length, ...state.forms);
     catalogReady = true;

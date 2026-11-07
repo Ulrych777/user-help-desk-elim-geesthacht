@@ -1186,9 +1186,19 @@ main[data-view="home"] ~ footer {
   text-decoration: none;
   font-weight: 600;
 }
-.prototype-note {
-  font-size: var(--text-small);
-  color: var(--muted);
+.footer-inner .footer-admin {
+  padding: 12px 20px;
+  color: var(--deep);
+  border-color: #e99a47;
+  background: linear-gradient(160deg, #ffc888, #f49a43);
+  box-shadow:
+    inset 2px 3px 5px #ffffff80,
+    inset -2px -3px 5px #ad570d26,
+    0 2px 3px #77654c24,
+    0 5px 10px #67553c20;
+}
+.footer-inner .footer-admin:hover {
+  background: linear-gradient(160deg, #ffd29c, #f6a456);
 }
 @media (min-width: 1100px) and (min-height: 850px) {
   .home-search-panel {

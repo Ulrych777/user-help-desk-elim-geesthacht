@@ -1,0 +1,48 @@
+{
+  // Vorlage, keine aktive Zielumgebung. Alle REPLACE-Werte vor Verwendung ersetzen.
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "elim-serviceportal-production",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-26",
+  "account_id": "REPLACE_WITH_ELIM_ACCOUNT_ID",
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [{
+    "pattern": "REPLACE_WITH_FINAL_HOSTNAME",
+    "custom_domain": true,
+    "zone_name": "elimgeesthacht.de"
+  }],
+  "assets": {
+    "binding": "ASSETS",
+    "directory": "./public-preview",
+    "run_worker_first": ["/api/*", "/admin", "/admin/*", "/media/*"]
+  },
+  "vars": {
+    "APP_ENV": "production",
+    "PUBLIC_SITE_ENABLED": "true",
+    "PORTAL_MODE": "persistent",
+    "PUBLIC_HOSTNAME": "REPLACE_WITH_FINAL_HOSTNAME",
+    "CF_ACCESS_TEAM_DOMAIN": "REPLACE_WITH_ELIM_TEAM.cloudflareaccess.com",
+    "CF_ACCESS_AUD": "REPLACE_WITH_NEW_ACCESS_AUDIENCE",
+    "MAIL_ENABLED": "false",
+    "MAIL_TEST_TO": "glenn.ritter@elimgeesthacht.de",
+    "RESEND_FROM": "Serviceportal <anfrage@REPLACE_WITH_VERIFIED_MAIL_DOMAIN>",
+    "TURNSTILE_SITE_KEY": "REPLACE_WITH_TARGET_SITE_KEY"
+  },
+  "ratelimits": [{
+    "name": "REQUEST_RATE_LIMITER",
+    "namespace_id": "2100294101",
+    "simple": {"limit": 5, "period": 60}
+  }],
+  "triggers": {"crons": ["17 * * * *"]},
+  "d1_databases": [{
+    "binding": "DB",
+    "database_name": "elim-serviceportal-production-db",
+    "database_id": "REPLACE_WITH_NEW_DATABASE_ID",
+    "migrations_dir": "migrations"
+  }],
+  "r2_buckets": [{
+    "binding": "MEDIA",
+    "bucket_name": "elim-serviceportal-production-media"
+  }]
+}

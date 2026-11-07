@@ -4,6 +4,11 @@
 
 **Verwaltung:** https://serviceportal.glennritter.de/admin/
 
+**Stand:** Beta-Abnahme durch den Benutzer am 7. November 2026. Der Versand bleibt
+auf das bisherige Testpostfach begrenzt; ein Domain-/Kontoumzug ist noch nicht erfolgt.
+Übergabe und Vorbereitung: [Beta-Stand](docs/BETA-UEBERGABE.md) und
+[Migration und Veröffentlichung](docs/MIGRATION-UND-VEROEFFENTLICHUNG.md).
+
 Das Serviceportal enthält die vollständige Oberfläche mit globaler Suche,
 Bereichssuche, Kategorien, Formularen, Anleitungen und Bildverwaltung.
 Die öffentliche Seite lädt ausschließlich veröffentlichte Inhalte aus D1.
@@ -70,7 +75,7 @@ Die HTML-Metadaten serviceportal-build nennen den veröffentlichten Git-Commit.
 
 ## Lokal entwickeln
 
-Voraussetzung: Node.js 24 und npm. In der verwalteten Cloud-Umgebung:
+Voraussetzung: Node.js 24, npm und Python 3 für Sicherung/Prüfung. In der verwalteten Cloud-Umgebung:
 
     export npm_config_cache=/workspace/.cache/npm
     export XDG_CONFIG_HOME=/workspace/.config
@@ -126,5 +131,13 @@ prüfen diesen getrennten Ablauf. Sie ist nicht die maßgebliche Entwicklungssei
 
 Weitere Informationen: [Administration](docs/ADMINISTRATION.md),
 [E-Mail-Versand](docs/EMAIL-VERSAND.md),
-[Projektplan](docs/PROJEKTPLAN.md), [Wiederherstellung](docs/WIEDERHERSTELLUNG.md),
+[Anleitungseditor](docs/ANLEITUNGS-EDITOR.md),
+[Gestaltung](docs/GESTALTUNG-UND-TEXTE.md),
+[Projektplan](docs/PROJEKTPLAN.md), [historische Rekonstruktion](docs/WIEDERHERSTELLUNG.md),
 [Bildherkunft](prototype/assets/README.md).
+
+Die vollständige Beta-Prüfung lässt sich mit `npm run check:beta` ausführen.
+`npm run backup:source` sichert die versionierten Arbeitsdateien einschließlich
+Worker, Migrationen, Lockfile und Konfiguration nach `backups/`. Neue Dateien
+vorher zu Git hinzufügen. D1-Inhalte, R2-Uploads und Secrets sind nicht Teil der
+Quellcodesicherung; der Migrationsleitfaden beschreibt die getrennte Sicherung.

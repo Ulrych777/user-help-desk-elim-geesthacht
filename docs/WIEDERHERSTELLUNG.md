@@ -1,5 +1,10 @@
 # Wiederherstellung und Rekonstruktion
 
+> Historische Dokumentation der Rekonstruktion vom 5. November 2026.
+> Die hier als offen beschriebenen dauerhaften Funktionen sind inzwischen umgesetzt.
+> Aktueller Stand: [Beta-Übergabe](BETA-UEBERGABE.md). Für Sicherung und Umzug
+> gilt [Migration und Veröffentlichung](MIGRATION-UND-VEROEFFENTLICHUNG.md).
+
 Stand: 5. November 2026. Gemeint sind Freitag, 30. Oktober, und Samstag, 31. Oktober 2026.
 
 ## Was tatsächlich geprüft wurde

@@ -7,3 +7,9 @@ SHA-256: `9658f8152049cc9a5f2b28cece646c95cadfa21987f441a7c2bb7f7da7eff9cb`.
 Die fünf übrigen PNG-Illustrationen wurden am 5. November 2026 anhand des erneut bereitgestellten Mockups E erzeugt: Monitor, schlichtes Haus, Rechner mit Dokument, rechteckige offene Tür und unscharfe Hintergrundpflanze. Sie ersetzen die nicht mehr erreichbaren Illustrationen des vorherigen Prototyps und stellen keine tatsächlichen Räume oder Gebäude der Gemeinde dar. Die drei Bereichsmotive verwenden einheitlich 1536 × 1024 Pixel und besitzen transparente Hintergründe. Ihre WebP-Fassungen behalten Größe und Transparenz und stehen jeweils im Editor des zugehörigen Bereichs als Stilvorlage zum Download bereit; die PNG-Originale bleiben als Master erhalten. Die Wort-Bild-Marke wird nicht in WebP konvertiert.
 
 `wlan-einstellungen.svg` ist eine schematische Beispielgrafik, kein tatsächlicher Screenshot eines Gemeindegeräts. Sie enthält keine Zugangsdaten.
+
+`suche-kein-treffer.webp` und `anfrage-gesendet.webp` sind am 7. November 2026
+KI-generierte Illustrationen im Stil der Bereichsmotive. Die Lupe illustriert
+leere Suchergebnisse; der gepolsterte Brief mit orangefarbenem Häkchen die
+Sendebestätigung. Beide werden mit transparentem Hintergrund lokal eingebettet.
+Die Briefgrafik ist 960 × 640 Pixel groß und wird höchstens 260 Pixel breit angezeigt.

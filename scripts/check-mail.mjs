@@ -335,7 +335,7 @@ try {
   assert(providerCalls.at(-1).payload.text.includes("Browser Test"));
   assert.equal(providerCalls.at(-1).payload.reply_to, "browser@example.test");
   assert.deepEqual(providerCalls.at(-1).payload.attachments.map(file => file.filename), ['test.pdf']);
-  assert.equal(await page.locator(".prototype-note").textContent(), "Serviceportal · Testbetrieb");
+  assert.equal(await page.locator(".prototype-note").count(), 0);
   assert.equal(new Set(attemptIds).size, 1, 'Transport errors must retain the same request ID');
   providerMode = 'success';
   await page.goto(base + '/#form/it-allgemein');
