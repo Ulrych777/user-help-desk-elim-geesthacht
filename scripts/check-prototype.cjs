@@ -115,6 +115,13 @@ const fs = require("node:fs"),
       path: "/tmp/elim-rekonstruktion-startseite.png",
       fullPage: true,
     });
+    await page.locator('#portal-search').fill('zzzz-kein-treffer');
+    await page.locator('.empty-illustration').waitFor();
+    assert(await page.locator('.empty-illustration').evaluate(img => img.decode().then(() => img.naturalWidth > 0)));
+    assert.equal(await page.locator('.empty a[href^="#form/"]').count(), 0);
+    await page.locator('.empty [data-empty-reset]').click();
+    assert.equal(await page.locator('#portal-search').inputValue(), '');
+    assert(await page.locator('#search-results').isHidden());
     await page
       .locator("#portal-search")
       .fill("Ich brauche ein neues Microsoft Konto");
@@ -170,6 +177,12 @@ const fs = require("node:fs"),
       "Original-Logo, Startseite, Suchtreffer, echter Direktlink und Kopierbestätigung; Dialogfokus und Erhalt desselben Formularentwurfs.",
     );
     await visit("area/it");
+    await page.locator('#area-category').selectOption('konten');
+    await page.locator('#area-search').fill('zzzz-kein-treffer');
+    await page.locator('.empty [data-empty-reset]').click();
+    assert.equal(await page.locator('#area-search').inputValue(), '');
+    assert.equal(await page.locator('#area-category').inputValue(), 'all');
+    assert.equal(await page.locator('.request-card').count(), 5);
     await page.locator("#area-category").click();
     assert(await page.locator("#area-category").evaluate(select => select.matches(":open")));
     await page.getByRole("option", { name: "Hilfe & Störungen", exact: true }).click();
@@ -357,6 +370,10 @@ const fs = require("node:fs"),
       preset,
     );
     assert.equal(await page.locator("#area-category").count(), 0);
+    await page.getByRole('heading', { name: 'Hier ist noch Platz für Neues', exact: true }).waitFor();
+    assert((await page.locator('.empty').textContent()).includes('noch keine Anliegen veröffentlicht'));
+    assert.equal(await page.locator('.empty [data-empty-reset]').count(), 0);
+    assert.equal(await page.locator('.empty a').getAttribute('href'), '#home');
     await visit(editRoute);
     await page
       .locator("#area-image-file")

@@ -537,6 +537,18 @@ function renderHome() {
   });
   renderSearchResults();
 }
+function emptyStateMarkup(mode) {
+  const unpublished = mode === "empty-area";
+  const text = unpublished
+    ? "In diesem Bereich sind noch keine Anliegen veröffentlicht. Schau später wieder vorbei oder entdecke die anderen Bereiche."
+    : mode === "area-search"
+      ? "Unsere Lupe hat noch nichts entdeckt. Versuche einen anderen Suchbegriff oder setze die Filter zurück."
+      : "Unsere Lupe hat noch nichts entdeckt. Versuche es mit einem anderen Suchbegriff.";
+  const action = unpublished
+    ? '<a class="btn secondary" href="#home">Bereiche entdecken</a>'
+    : '<button class="btn secondary" type="button" data-empty-reset>Suche zurücksetzen</button>';
+  return `<div class="empty empty-illustrated"><img class="empty-illustration" src="${asset("suche-kein-treffer.webp")}" width="768" height="512" alt="" aria-hidden="true"><div class="empty-copy"><p class="empty-eyebrow">${unpublished ? "Noch keine Anliegen" : "Auf Spurensuche"}</p><h3>${unpublished ? "Hier ist noch Platz für Neues" : "Keine passenden Anliegen gefunden"}</h3><p>${text}</p><div class="actions">${action}</div></div></div>`;
+}
 function renderSearchResults() {
   const hasQuery = Boolean(searchQuery.trim());
   $("search-results").hidden = !hasQuery;
@@ -549,7 +561,13 @@ function renderSearchResults() {
   $("result-count").textContent = `${matches.length} Anliegen gefunden`;
   $("results").innerHTML = matches.length
     ? requestCards(matches)
-    : '<div class="empty"><h3>Kein passendes Anliegen gefunden</h3><p>Versuche einen anderen Suchbegriff.</p></div>';
+    : emptyStateMarkup("home-search");
+  $("results").querySelector("[data-empty-reset]")?.addEventListener("click", () => {
+    searchQuery = "";
+    $("portal-search").value = "";
+    renderSearchResults();
+    $("portal-search").focus();
+  });
 }
 function renderArea(areaId) {
   const area = areaById(areaId);
@@ -574,7 +592,8 @@ function renderArea(areaId) {
     $("area-reset").hidden = !state.query && state.category === "all";
     $("results").innerHTML = matches.length
       ? requestCards(matches)
-      : '<div class="empty"><h3>Keine passenden Anliegen gefunden</h3><p>Versuche einen anderen Suchbegriff oder setze die Auswahl zurück.</p></div>';
+      : emptyStateMarkup(available.length ? "area-search" : "empty-area");
+    $("results").querySelector("[data-empty-reset]")?.addEventListener("click", () => $("area-reset").click());
   };
   $("area-search").addEventListener("input", (event) => {
     state.query = event.target.value;

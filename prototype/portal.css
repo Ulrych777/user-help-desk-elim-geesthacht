@@ -838,6 +838,35 @@ legend {
 .empty p:last-child {
   margin-bottom: 0;
 }
+.empty-illustrated {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  min-height: 240px;
+  text-align: left;
+}
+.empty-illustration {
+  display: block;
+  flex: none;
+  width: clamp(160px, 18vw, 220px);
+  height: auto;
+}
+.empty-copy { min-width: 0; max-width: 560px; }
+.empty-copy h3 { font-size: var(--text-card); line-height: var(--line-heading); margin-bottom: 12px; }
+.empty-copy > p:not(.empty-eyebrow) { color: var(--muted); margin-bottom: 20px; }
+.empty-copy .empty-eyebrow {
+  margin-bottom: 8px;
+  font-size: var(--text-small);
+  font-weight: 600;
+  color: #355773;
+}
+.empty-copy .actions { margin: 0; }
+@media (max-width: 620px) {
+  .empty-illustrated { flex-direction: column; gap: 12px; padding: 24px; text-align: center; }
+  .empty-illustration { width: 180px; max-width: 100%; }
+  .empty-copy .actions { justify-content: center; }
+}
 .success {
   max-width: 720px;
   margin: 54px auto;

@@ -1,5 +1,7 @@
 # Gestaltung des Elim Kirche Serviceportals
 
+Leere Suchergebnisse erhalten eine freundliche Lupe mit leeren Karten und Pflanze im bestehenden 3D-Stil. Das transparente WebP-Motiv ist lokal eingebettet; es lädt keine externen Ressourcen. „Auf Spurensuche“ ergänzt den klaren Hinweis auf fehlende Treffer, und „Suche zurücksetzen“ leert Suchbegriff und gegebenenfalls Kategorie. Verweise auf allgemeine Anfragen bleiben entfernt. Bereiche ohne veröffentlichte Anliegen zeigen stattdessen „Hier ist noch Platz für Neues“ und führen zur Bereichsübersicht, damit ein leerer Bereich nicht als fehlerhafte Suche erscheint. Auf schmalen Bildschirmen stehen Illustration und Text untereinander.
+
 Die großen Karten verwenden jetzt dieselben kissenförmigen Innenkanten wie die Bereichskacheln der Startseite: Anliegenkacheln, Formular- und Anleitungsflächen, Verwaltungskarten, Suchfilter, Leerzustände und Anmeldestatus. Bereichsbanner, dunkelblaue Überschriften, Kontaktkacheln und die Verwaltungsnavigation erhalten denselben Effekt mit dezenten, zur dunklen Fläche passenden Licht- und Schattenfarben. Gemeinsame CSS-Variablen steuern die Innenkanten. Die dekorative Ebene nimmt keine Klicks entgegen und verändert weder Abstände noch die Bedienung von Feldern und Schaltflächen.
 
 Im Bereichseditor wird das Motiv ausschließlich unter „Bereichsbild“ hochgeladen, ersetzt, entfernt und in der Vorschau kontrolliert. Die unabhängige Symbolauswahl entfällt. Bestehende Bilder bleiben erhalten und werden weiterhin für Startseitenkachel und Bereichsbanner verwendet.
