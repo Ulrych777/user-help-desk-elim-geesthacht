@@ -22,7 +22,7 @@ try {
   fs.writeFileSync(path.join(temporary, "package.json"), '{"type":"module"}');
   const worker = (await import(pathToFileURL(path.join(temporary, "index.js")))).default;
   database = new DatabaseSync(path.join(temporary, "mail.sqlite"));
-  for (const file of ["0002_portal_content.sql", "0003_submission_receipts.sql"])
+  for (const file of ["0002_portal_content.sql", "0003_submission_receipts.sql", "0005_mail_template_version.sql"])
     database.exec(fs.readFileSync(path.join(root, "migrations", file), "utf8"));
   const initial = JSON.parse(fs.readFileSync(path.join(root, "seeds/portal.json"), "utf8"));
   const custom = {
@@ -154,6 +154,11 @@ try {
   const outgoing = providerCalls.at(-1).payload;
   assert.deepEqual(outgoing.to, [env.MAIL_TEST_TO]);
   assert.equal(outgoing.reply_to, "sender@example.test");
+  assert(outgoing.html.includes('lang="de"'));
+  assert(outgoing.html.includes('Per E-Mail antworten'));
+  assert(outgoing.html.includes('Weitere Angaben'));
+  assert(outgoing.html.includes('Anhänge (2)'));
+  assert(outgoing.html.indexOf('Team</th>') < outgoing.html.indexOf('Datum</th>'));
   assert.equal(outgoing.from, env.RESEND_FROM);
   assert(outgoing.text.includes("Team: Technik"));
   assert(outgoing.text.includes("Auswahl: A"));
@@ -167,8 +172,30 @@ try {
   assert.equal((await send(data({ requestId: id, message: "changed" }))).status, 409);
   assert.equal((await send(data({ formId: "wlan-anleitung", name: "" }))).status, 200);
   assert(providerCalls.at(-1).payload.text.includes("Rückfrage zur Anleitung"));
+  assert(providerCalls.at(-1).payload.html.includes("Rückfrage zur Anleitung"));
+  assert(!providerCalls.at(-1).payload.html.includes('<h2 style="margin:28px 0 10px;font-size:18px;line-height:26px;color:#102d45;">Weitere Angaben</h2>'));
+  const unsafeMessage = 'Hallo <script>window.injected=true</script> & Grüße\nZweite Zeile';
+  const unsafeFields = { ...fields, text: '<img src=x onerror="window.injected=true">', long: 'a'.repeat(1000) + '\nWeitere Details <b>als Text</b>' };
+  assert.equal((await send(data({ formId: "mail-fields", fields: unsafeFields, name: 'Name <b>Test</b>', subject: 'Hilfe <script>Test</script>', message: unsafeMessage }, [new File([await pdf.arrayBuffer()], 'plan<&>.pdf', { type: 'application/pdf' })]))).status, 200);
+  const escapedMail = providerCalls.at(-1).payload;
+  assert(escapedMail.html.includes('&lt;script&gt;window.injected=true&lt;/script&gt; &amp; Grüße<br>Zweite Zeile'));
+  assert(escapedMail.html.includes('plan&lt;&amp;&gt;.pdf'));
+  assert(escapedMail.html.includes('&lt;img src=x onerror=&quot;window.injected=true&quot;&gt;'));
+  assert(escapedMail.text.replace(/\r\n/g, '\n').includes(unsafeMessage));
   pass("accepted receipt, fixed test recipient, Reply-To, all dynamic fields, byte-exact attachments and duplicate protection");
 
+  // A pending receipt from the old worker must retain the exact text-only format.
+  const legacyId = crypto.randomUUID();
+  providerMode = "fail";
+  assert.equal((await send(data({ requestId: legacyId }))).status, 503);
+  database.prepare("UPDATE submission_receipts SET mail_template_version=1 WHERE request_id=?").run(legacyId);
+  providerMode = "lost-response";
+  assert.equal((await send(data({ requestId: legacyId }))).status, 503);
+  const legacyMail = providerCalls.at(-1).payload;
+  assert.equal(legacyMail.html, undefined);
+  assert(legacyMail.text.startsWith('Serviceportal – neue Anfrage\nVorgangsnummer: SP-'));
+  assert.equal((await send(data({ requestId: legacyId }))).status, 200);
+  assert.deepEqual(providerCalls.at(-1).payload, legacyMail);
   const retryId = crypto.randomUUID();
   providerMode = "lost-response";
   assert.equal((await send(data({ requestId: retryId }))).status, 503);
@@ -185,9 +212,9 @@ try {
   assert(responses.every(response => response.status === 200));
   assert.equal(delivered.size, beforeRace + 1);
   const columns = database.prepare("PRAGMA table_info(submission_receipts)").all().map(c => c.name);
-  assert.deepEqual(columns, ["request_id","digest","status","provider_id","created_at"]);
+  assert.deepEqual(columns, ["request_id","digest","status","provider_id","created_at","mail_template_version"]);
   const oldId = crypto.randomUUID();
-  database.prepare("INSERT INTO submission_receipts VALUES (?,?, 'pending', NULL, ?)").run(oldId, "old-digest", 1);
+  database.prepare("INSERT INTO submission_receipts (request_id,digest,status,provider_id,created_at) VALUES (?,?, 'pending', NULL, ?)").run(oldId, "old-digest", 1);
   await worker.scheduled({}, env);
   assert.equal(database.prepare("SELECT COUNT(*) AS count FROM submission_receipts WHERE request_id=?").get(oldId).count, 0);
   pass("provider errors never confirm success; lost-response and simultaneous retries do not duplicate mail; metadata cleanup");
@@ -214,6 +241,30 @@ try {
     ...(fs.existsSync("/usr/bin/chromium") ? { executablePath: "/usr/bin/chromium" } : {}),
   });
   const context = await browser.newContext();
+  const mailPreview = await context.newPage();
+  const mailResources = [];
+  await mailPreview.route('**/*', route => { mailResources.push(route.request().url()); return route.abort(); });
+  await mailPreview.setContent(escapedMail.html);
+  assert.equal(await mailPreview.locator('script,img,iframe,object').count(), 0);
+  assert.equal(await mailPreview.evaluate(() => window.injected), undefined);
+  assert.equal(await mailPreview.getByRole('heading', { name: 'Hilfe <script>Test</script>', exact: true }).textContent(), 'Hilfe <script>Test</script>');
+  const replyLink = new URL(await mailPreview.getByRole('link', { name: 'Per E-Mail antworten', exact: true }).getAttribute('href'));
+  assert.equal(replyLink.protocol, 'mailto:');
+  assert.equal(decodeURIComponent(replyLink.pathname), escapedMail.reply_to);
+  assert.equal(replyLink.searchParams.get('subject'), 'Re: ' + escapedMail.subject);
+  for (const width of [700, 390, 320]) {
+    await mailPreview.setViewportSize({ width, height: 1000 });
+    assert(await mailPreview.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+  }
+  assert.deepEqual(mailResources, []);
+  await mailPreview.setContent(outgoing.html);
+  for (const width of [700, 390]) {
+    await mailPreview.setViewportSize({ width, height: 1000 });
+    await mailPreview.screenshot({ path: '/tmp/serviceportal-mail-' + width + '.png', fullPage: true });
+  }
+  fs.writeFileSync('/tmp/serviceportal-mail-vorschau.html', outgoing.html);
+  await mailPreview.close();
+  pass('HTML mail: escaped user content and filenames, correct reply link, field order, text alternative, no remote resources and readable widths down to 320 px');
   await context.route("https://challenges.cloudflare.com/turnstile/v0/api.js?*", route => route.fulfill({
     contentType: "text/javascript",
     body: 'window.turnstile={render(el,opts){this.options=opts;el.textContent="Sicherheitsprüfung (Test)";opts.callback("good-token");return "test-widget";},reset(){this.options.callback("good-token");},remove(){}};',

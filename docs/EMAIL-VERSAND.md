@@ -58,13 +58,24 @@ Vorgangsnummer. Anleitungs-Rückfragen benötigen nur E-Mail, Betreff und Nachri
 Es wird keine zusätzliche automatische E-Mail an die angegebene Absenderadresse
 geschickt.
 
+Neue Anfragen erhalten eine HTML-Version im dunkelblau-cremefarbenen Portaldesign
+und eine gegliederte Textalternative. Betreff und Vorgangsnummer stehen im Kopf;
+Anliegen, Kontakt, individuelle Angaben, Nachricht und Anhänge sind getrennt.
+Individuelle Angaben folgen der im Anliegeneditor gespeicherten Reihenfolge.
+Auf schmalen Bildschirmen stehen Beschriftungen über ihren Werten. Der Button
+„Per E-Mail antworten“ verwendet die eingetragene Kontaktadresse und übernimmt
+den Betreff einschließlich Vorgangsnummer. Reply-To bleibt zusätzlich gesetzt.
+Die Nachricht und andere Eingaben werden als Text maskiert; es werden keine
+externen Bilder, Schriftarten oder Tracking-Ressourcen eingebunden.
+
 Die Übermittlung ist synchron: Erst nach bestätigter Annahme durch Resend erscheint
 die Erfolgsmeldung. Das ist keine Garantie für die spätere Postfachzustellung.
 Es gibt keine dauerhafte Versandqueue. Bei Ausfall oder Zeitüberschreitung bleiben
 Eingaben und Dateien im Browser erhalten und können erneut versucht werden.
 
 Eine stabile Anfrage-UUID wird als Resend-Idempotency-Key verwendet. D1 enthält
-nur UUID, Eingabefingerabdruck, Versandstatus, Provider-ID und Erstellungszeit.
+nur UUID, Eingabefingerabdruck, Versandstatus, Provider-ID, Erstellungszeit und
+eine technische Vorlagenversion.
 Parallele oder wiederholte identische Versuche erzeugen dadurch keine zweite
 Nachricht im geschützten Wiederholungszeitraum. Abweichende Daten unter derselben
 Kennung werden abgewiesen. Ein länger als 23 Stunden unbestätigter Vorgang wird
@@ -72,6 +83,14 @@ nicht automatisch neu versandt, weil der Idempotency-Zeitraum des Dienstes ausl�
 Technische Belege werden nach sieben Tagen bei der stündlichen Bereinigung
 gelöscht. Es werden keine Nachrichteninhalte, E-Mail-Adressen oder IP-Adressen
 in dieser Tabelle gespeichert.
+
+Migration `0005_mail_template_version.sql` setzt bestehende Belege auf Version 1.
+Ihre unbestätigten Wiederholungen verwenden weiterhin den unveränderten alten
+Text-Payload. Neue Vorgänge erhalten Version 2 (HTML und Text). Die Vorlage ist
+deterministisch und enthält keine bei jedem Versuch neu erzeugten Zeitstempel.
+Bei künftigen Vorlagenänderungen muss eine neue Version ergänzt und die bisherige
+Vorlage für unbestätigte Wiederholungen erhalten werden, damit Resends
+Idempotency-Key weiterhin exakt denselben Payload bezeichnet.
 
 Die Ratenbegrenzung erlaubt fünf Versuche pro Minute je IP und Cloudflare-Standort.
 Turnstile verhindert, dass ein bloßes automatisiertes POST das Formular umgeht.

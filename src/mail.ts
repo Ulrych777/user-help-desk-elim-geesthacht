@@ -2,6 +2,7 @@ import {
   loadPortalState, readBoundedBody, PortalError, submissionSettings,
   type PortalEnv, type PortalState,
 } from "./portal.js";
+import { renderRequestEmail } from "./request-email.js";
 
 const reply = (data: unknown, status = 200) => Response.json(data, {
   status, headers: { "cache-control": "no-store", "x-content-type-options": "nosniff" },
@@ -136,12 +137,8 @@ export async function handleSubmission(request: Request, env: PortalEnv): Promis
     const recipient = env.MAIL_TEST_TO || area!.email;
     if (!emailPattern.test(recipient)) throw new PortalError(503, "Der Empfänger ist noch nicht eingerichtet.");
     const reference = "SP-" + requestId.slice(0, 8).toUpperCase() + "-" + requestId.slice(9, 13).toUpperCase();
-    const payload = {
-      from: env.RESEND_FROM!,
-      to: [recipient],
-      reply_to: email,
-      subject: "[" + reference + "] " + area!.name.replace(/[\r\n]/g, " ") + ": " + subject,
-      text: [
+    const mailSubject = "[" + reference + "] " + area!.name.replace(/[\r\n]/g, " ") + ": " + subject;
+    const legacyText = [
         "Serviceportal – neue Anfrage", "Vorgangsnummer: " + reference,
         "Bereich: " + area!.name, "Anliegen: " + form!.title,
         "Art: " + (form!.type === "guide" ? "Rückfrage zur Anleitung" : "Formular"),
@@ -149,15 +146,13 @@ export async function handleSubmission(request: Request, env: PortalEnv): Promis
         ...fields.map(field => field.label + ": " + (field.value || "–")),
         "", "Nachricht:", message, "",
         files.length ? "Anhänge: " + files.map(f => f.filename).join(", ") : "Keine Anhänge.",
-      ].join("\n"),
-      ...(files.length ? { attachments: files } : {}),
-    };
+      ].join("\n");
     // The fingerprint is based on user input, not mutable recipient/form labels.
     const digest = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256",
       new TextEncoder().encode(JSON.stringify({ formId, name, email, subject, message, fields: rawFields, files })),
     ))).map(x => x.toString(16).padStart(2, "0")).join("");
-    const receipt = await env.DB.prepare("SELECT digest, status, created_at FROM submission_receipts WHERE request_id = ?")
-      .bind(requestId).first<{ digest: string; status: string; created_at: number }>();
+    const receipt = await env.DB.prepare("SELECT digest, status, created_at, mail_template_version FROM submission_receipts WHERE request_id = ?")
+      .bind(requestId).first<{ digest: string; status: string; created_at: number; mail_template_version: number }>();
     if (receipt && receipt.digest !== digest)
       throw new PortalError(409, "Diese Anfragekennung wurde bereits mit anderen Angaben verwendet. Bitte dieselben Angaben erneut versuchen oder für eine neue Anfrage die Seite neu laden.");
     if (receipt?.status === "sent") return reply({ reference, accepted: true });
@@ -165,15 +160,28 @@ export async function handleSubmission(request: Request, env: PortalEnv): Promis
       throw new PortalError(409, "Der frühere Versandstatus ist nicht mehr sicher prüfbar. Bitte die Anfrage nicht erneut senden und den Empfänger kontaktieren.");
     const challenge = string(data!.get("turnstileToken"), 2048);
     await verifyChallenge(challenge, ip!, env, requestId);
+    let templateVersion = receipt?.mail_template_version ?? 2;
     const inserted = await env.DB.prepare(
-      "INSERT OR IGNORE INTO submission_receipts (request_id, digest, status, created_at) VALUES (?, ?, 'pending', ?)",
+      "INSERT OR IGNORE INTO submission_receipts (request_id, digest, status, created_at, mail_template_version) VALUES (?, ?, 'pending', ?, 2)",
     ).bind(requestId, digest, Math.floor(Date.now() / 1000)).run();
     if (inserted.meta.changes !== 1) {
-      const competing = await env.DB.prepare("SELECT digest, status FROM submission_receipts WHERE request_id = ?")
-        .bind(requestId).first<{ digest: string; status: string }>();
+      const competing = await env.DB.prepare("SELECT digest, status, mail_template_version FROM submission_receipts WHERE request_id = ?")
+        .bind(requestId).first<{ digest: string; status: string; mail_template_version: number }>();
       if (!competing || competing.digest !== digest) throw new PortalError(409, "Diese Anfragekennung wird bereits verwendet.");
       if (competing.status === "sent") return reply({ reference, accepted: true });
+      templateVersion = competing.mail_template_version;
     }
+    if (![1, 2].includes(templateVersion)) throw new PortalError(503, "Die E-Mail-Vorlage ist gerade nicht verfügbar. Bitte später erneut versuchen.");
+    const formatted = templateVersion === 2 ? renderRequestEmail({
+      reference, area: area!.name, concern: form!.title, guide: form!.type === "guide",
+      name, email, subject, replySubject: mailSubject, message, fields, files,
+    }) : {};
+    const payload = {
+      from: env.RESEND_FROM!, to: [recipient], reply_to: email, subject: mailSubject,
+      text: legacyText,
+      ...formatted,
+      ...(files.length ? { attachments: files } : {}),
+    };
     let response: Response;
     try {
       response = await fetch("https://api.resend.com/emails", {
