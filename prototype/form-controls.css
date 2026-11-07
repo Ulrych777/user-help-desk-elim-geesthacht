@@ -8,6 +8,62 @@
   --control-shadow: inset 0 2px 4px #66543a0c, 0 1px 0 #ffffffb3;
 }
 
+#request-verification {
+  margin: 24px 0;
+  min-width: 0;
+}
+.date-control { position: relative; }
+.date-control input[type="date"] { padding-right: 58px !important; }
+.date-control input::-webkit-calendar-picker-indicator { display: none; }
+.date-toggle {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 42px;
+  height: 42px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--deep);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.date-toggle svg { width: 22px; height: 22px; }
+.date-toggle:hover, .date-toggle[aria-expanded="true"] { background: var(--tag-blue-bg); }
+.date-calendar {
+  width: min(100%, 360px);
+  margin-top: 12px;
+  padding: 16px;
+  border: 1px solid var(--line-warm, #d4cabb);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  box-shadow: var(--surface-shadow), var(--card-inset-light);
+  color: var(--ink);
+}
+.date-calendar[hidden] { display: none; }
+.date-calendar button {
+  min-height: 36px;
+  padding: 4px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--deep);
+  font: inherit;
+  cursor: pointer;
+}
+.date-calendar button:hover { background: var(--tag-blue-bg); }
+.date-calendar button:disabled { opacity: .4; cursor: default; }
+.date-calendar-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+.date-calendar-head button { width: 36px; font-size: 24px; }
+.date-calendar-head strong { font-size: var(--text-body); }
+.date-weekdays, .date-days [role="row"] { display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); gap: 3px; text-align: center; }
+.date-weekdays { font-size: var(--text-small); color: var(--muted); padding-bottom: 8px; }
+.date-days button { width: 100%; }
+.date-days button[aria-current="date"] { box-shadow: inset 0 0 0 1px var(--accent-orange); }
+.date-days button.selected { background: var(--deep); color: #fff; }
+.date-calendar-foot { display: flex; justify-content: space-between; gap: 12px; border-top: 1px solid var(--line-warm, #d4cabb); margin-top: 12px; padding-top: 8px; font-size: var(--text-small); }
+
 :focus-visible {
   outline: 2px solid var(--control-focus);
   outline-offset: 3px;

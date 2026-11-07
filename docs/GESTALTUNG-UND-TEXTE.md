@@ -1,5 +1,7 @@
 # Gestaltung des Elim Kirche Serviceportals
 
+Formulare und Anleitungskontaktformulare haben ober- und unterhalb der Cloudflare-Prüfung 24 px Abstand. Datumsfelder behalten ihre native Eingabe und ISO-Werte; die Kalenderauswahl verwendet die Creme-Blau-Flächen und weichen Kartenränder des Portals. Gewählte Tage sind dunkelblau, heute ist orange umrandet. Pfeiltasten, Pos1/Ende, Bild auf/ab, Monatswechsel, Heute, Löschen und Escape werden unterstützt; Escape schließt zuerst nur den Kalender.
+
 Nach erfolgreicher Annahme durch den Versanddienst zeigt die Sendebestätigung eine plastische, weich gepolsterte Briefillustration mit orangefarbenem Häkchen (lokales WebP mit 960 Pixeln Breite für eine scharfe Darstellung auch auf hochauflösenden Displays) und „Deine Anfrage ist auf dem Weg!“. Der Brief gleitet einmal kurz ins Bild; bei „Bewegung reduzieren“ bleibt er statisch. Bereichsmotive bewegen sich beim Darüberfahren leicht, ausschließlich mit Maus und ohne reduzierte Bewegung. Versandstatus, Vorgangsnummer und Antwort per E-Mail bleiben klar erkennbar.
 
 Die Kennzeichnungen „Anleitung“, „Entwurf“ und „Inaktiv“ verwenden eine hellorange Fläche mit dunkler orangebrauner Schrift. „Veröffentlicht“ und „Aktiv“ verwenden dieselben blauen Farben wie „Formular“. Das gilt für Anliegen, Bereiche und Administratorkonten; der Anleitungstag ist auch in der dunkelblauen Kopfkachel orange.

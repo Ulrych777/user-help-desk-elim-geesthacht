@@ -172,6 +172,24 @@ const fs = require("node:fs"),
     assert.equal(await tab.locator("#request-name").inputValue(), "");
     await tab.reload();
     await tab.locator("dialog[open]").waitFor();
+    const dateInput = tab.locator('input[type="date"]');
+    await dateInput.fill('2028-02-28');
+    await tab.getByRole('button', {name:'Kalender öffnen', exact:true}).click();
+    await tab.keyboard.press('ArrowRight');
+    await tab.keyboard.press('Enter');
+    assert.equal(await dateInput.inputValue(), '2028-02-29');
+    await tab.getByRole('button', {name:'Kalender öffnen', exact:true}).click();
+    await tab.getByRole('button', {name:'Nächster Monat', exact:true}).click();
+    assert(await tab.locator('.date-calendar').isVisible());
+    await tab.getByRole('button', {name:'Freitag, 31. März 2028', exact:true}).click();
+    assert.equal(await dateInput.inputValue(), '2028-03-31');
+    await tab.getByRole('button', {name:'Kalender öffnen', exact:true}).click();
+    await tab.keyboard.press('Escape');
+    assert(await tab.locator('dialog[open]').isVisible());
+    assert(await tab.locator('.date-calendar').isHidden());
+    await tab.getByRole('button', {name:'Kalender öffnen', exact:true}).click();
+    await tab.getByRole('button', {name:'Datum löschen', exact:true}).click();
+    assert.equal(await dateInput.inputValue(), '');
     await tab.close();
     pass(
       "Original-Logo, Startseite, Suchtreffer, echter Direktlink und Kopierbestätigung; Dialogfokus und Erhalt desselben Formularentwurfs.",

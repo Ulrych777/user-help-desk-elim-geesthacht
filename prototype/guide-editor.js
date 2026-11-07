@@ -1,4 +1,6 @@
 import './field-sorter.js';
+import { enhanceDates } from './date-picker.js';
+window.PortalDatePicker = { enhance: enhanceDates };
 import { Editor, Node } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import { safeGuideLink, renderGuideDocument } from '../src/guide-document.ts';

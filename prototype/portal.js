@@ -729,6 +729,7 @@ function renderRequest(formId) {
   delete slot.dataset.widget;
   slot.innerHTML = requestMarkup(form);
   const requestForm = $("request-form");
+  window.PortalDatePicker.enhance(requestForm);
   let verificationToken = "", sending = false;
   const requestId = crypto.randomUUID();
   if (usesPortalApi) {
