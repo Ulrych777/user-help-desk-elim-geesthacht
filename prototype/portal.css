@@ -275,7 +275,8 @@ main[data-view="home"] {
 }
 .home-search-panel {
   position: sticky;
-  top: 24px;
+  /* Meet the viewport edge so the full-height backdrop cannot form a second cap. */
+  top: 0;
   align-self: start;
   height: clamp(440px, calc(100dvh - 170px), 1000px);
   color: white;

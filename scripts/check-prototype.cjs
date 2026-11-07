@@ -544,14 +544,28 @@ const fs = require("node:fs"),
     await visit("home");
     await pictures();
     assert.equal(await page.locator(".area-card").count(), 8);
+    // The curved search surface must track the header until it reaches the
+    // viewport edge; a gap here exposes a second dark top edge behind the card.
+    for (const scroll of [0, 40, 80, 120]) {
+      await page.evaluate(y => scrollTo(0, y), scroll);
+      await page.waitForFunction(() => {
+        const panel = document.querySelector(".home-search-panel").getBoundingClientRect();
+        const header = document.querySelector("header").getBoundingClientRect();
+        return Math.abs(panel.top - Math.max(0, header.bottom)) < 1;
+      });
+    }
     await page.evaluate(() => scrollTo(0, 350));
     await page.waitForFunction(
       () =>
         Math.abs(
           document.querySelector(".home-search-panel").getBoundingClientRect()
-            .top - 24,
+            .top,
         ) < 1,
     );
+    assert(await page.locator(".home-search-panel").evaluate(el => {
+      const rect = el.getBoundingClientRect();
+      return document.elementFromPoint(rect.right - 3, 3)?.closest(".home-search-panel") === el;
+    }), "Der Hintergrund darf oberhalb der gerundeten Suchkachel keine zweite Kante bilden.");
     let first = await page.locator("#portal-search").boundingBox();
     await page.evaluate(() => scrollTo(0, 650));
     let second = await page.locator("#portal-search").boundingBox();
