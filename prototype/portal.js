@@ -652,7 +652,7 @@ function guideContent(form) {
 }
 function prototypeRequestMarkup(form) {
   const area = areaById(form.area);
-  const heading = `<div class="page-heading dark"><span class="tag">${esc(area.name)}</span> <span class="tag ${isGuide(form) ? "guide" : ""}">${typeLabel(form)}</span><h2 id="request-title" style="font-size:clamp(26px,4vw,36px)">${esc(form.title)}</h2><p>${esc(form.description)}</p></div>`;
+  const heading = `<div class="page-heading dark"><span class="tag">${esc(area.name)}</span> <span class="tag ${isGuide(form) ? "guide" : ""}">${typeLabel(form)}</span><h2 id="request-title">${esc(form.title)}</h2><p>${esc(form.description)}</p></div>`;
   if (isGuide(form))
     return `<div class="guide-layout">${heading}<article class="panel guide-article" aria-label="Anleitungstext">${guideContent(form)}</article><form class="panel guide-contact" id="request-form"><h3>Du brauchst noch Hilfe?</h3><p>Schreib uns, wenn deine Frage noch offen ist.</p><p class="small muted">Bitte nur Beispieldaten eingeben. Felder mit * sind Pflichtfelder.</p>${field("Deine E-Mail-Adresse *", "request-email", input("request-email", "", true, "email"))}${field("Betreff *", "request-subject", input("request-subject", `Frage zur Anleitung: ${form.title}`.slice(0, 300), true))}${field("Nachricht *", "request-description", '<textarea id="request-description" required maxlength="5000" placeholder="Was hat nicht geklappt oder wobei brauchst du noch Hilfe?"></textarea>', "Bitte keine Passwörter oder vertraulichen Informationen eintragen.")}<div class="error" id="request-error" role="alert"></div><p class="small muted">Diese Vorschau verschickt keine E-Mails und speichert keine Eingaben.</p><button class="btn" type="submit">E-Mail-Versand simulieren ${icon("arrow")}</button></form></div>`;
   return `${heading}<div class="layout"><form class="panel" id="request-form"><h3>Deine Angaben</h3><p class="small muted">Bitte nur Beispieldaten eingeben. Felder mit * sind Pflichtfelder.</p><div class="form-grid">${field("Dein Name *", "request-name", input("request-name", "", true))}${field("Deine E-Mail-Adresse *", "request-email", input("request-email", "", true, "email"))}</div>${field("Betreff *", "request-subject", input("request-subject", form.title, true))}${form.fields.map(customField).join("")}${field("Deine Nachricht *", "request-description", '<textarea id="request-description" required maxlength="5000" placeholder="Was ist passiert oder wobei können wir dich unterstützen?"></textarea>', "Bitte keine Passwörter, vertraulichen Finanzunterlagen oder Seelsorgeinformationen eintragen.")}${form.upload ? `<div class="upload">${field("Dateien hinzufügen (optional)", "request-files", '<input id="request-files" type="file" multiple accept="image/jpeg,image/png,image/webp,application/pdf">', "Bis zu 3 Dateien, insgesamt höchstens 10 MB. JPG, PNG, WebP oder PDF.")}<p id="file-summary" class="small muted" aria-live="polite"></p></div>` : ""}<div class="error" id="request-error" role="alert"></div><p class="small muted">Die spätere Anfrage geht an das zuständige Team. In dieser Vorschau werden Eingaben und Dateien weder übertragen noch gespeichert.</p><button class="btn" type="submit">Absenden simulieren ${icon("arrow")}</button></form><aside class="aside"><h3>Dein Kontakt zum Team</h3><p>Im fertigen Portal geht deine Anfrage per E-Mail an das zuständige Team für ${esc(area.name)}.</p><p>Die Antwort erhältst du an deine E-Mail-Adresse.</p><p class="small">Diese Vorschau zeigt den Ablauf. Sie verschickt keine E-Mails.</p></aside></div>`;
@@ -668,7 +668,7 @@ function requestMarkup(form) {
       "Deine Angaben und Anhänge werden per E-Mail an das zuständige Team übermittelt.")
     .replace("Im fertigen Portal geht deine Anfrage per E-Mail an das zuständige Team für",
       "Deine Anfrage geht per E-Mail an das zuständige Team für")
-    .replace("Diese Vorschau zeigt den Ablauf. Sie verschickt keine E-Mails.", "Die Antwort erhältst du direkt per E-Mail.")
+    .replace('<p class="small">Diese Vorschau zeigt den Ablauf. Sie verschickt keine E-Mails.</p>', "")
     .replace("E-Mail-Versand simulieren", "Nachricht senden")
     .replace("Absenden simulieren", "Anfrage senden");
 }
@@ -1033,7 +1033,7 @@ $("copy-request-link").addEventListener("click", async () => {
 function renderAdminShell(section, content) {
   app.dataset.view = "admin";
   delete app.dataset.area;
-  app.innerHTML = `${crumbs("Admin-Vorschau")}<div class="page-heading dark"><p class="eyebrow">Für das IT-Team</p><h1>Portal verwalten</h1><p>Bereiche, Zuständigkeiten, Formulare und Anleitungen zentral pflegen.</p></div><div class="admin-note"><strong>Admin-Vorschau ohne Anmeldung:</strong> Änderungen gelten nur in diesem geöffneten Entwurf und gehen beim Neuladen verloren. Alle Empfängeradressen sind Beispiele.</div><div class="admin-layout"><nav class="admin-nav" aria-label="Verwaltung"><a class="${section === "areas" ? "active" : ""}" href="#admin/areas">Bereiche & Kategorien</a><a class="${section === "forms" ? "active" : ""}" href="#admin/forms">Anliegen</a></nav><section>${content}</section></div>`;
+  app.innerHTML = `${crumbs(adminDocument ? "Verwaltung" : "Admin-Vorschau")}<div class="page-heading dark"><p class="eyebrow">Für das IT-Team</p><h1>Portal verwalten</h1><p>Bereiche, Zuständigkeiten, Formulare und Anleitungen zentral pflegen.</p></div><div class="admin-note"><strong>Admin-Vorschau ohne Anmeldung:</strong> Änderungen gelten nur in diesem geöffneten Entwurf und gehen beim Neuladen verloren. Alle Empfängeradressen sind Beispiele.</div><div class="admin-layout"><nav class="admin-nav" aria-label="Verwaltung"><a class="${section === "areas" ? "active" : ""}" href="#admin/areas">Bereiche & Kategorien</a><a class="${section === "forms" ? "active" : ""}" href="#admin/forms">Anliegen</a></nav><section>${content}</section></div>`;
 }
 function adminShell(section, content) {
   if (adminDocument)
@@ -1045,9 +1045,13 @@ function adminShell(section, content) {
     adminLink.textContent = "Administratoren";
     if (section === "administrators") adminLink.className = "active";
     app.querySelector(".admin-nav").append(adminLink);
-    app.querySelector(".admin-note").innerHTML =
-      'Angemeldet als <strong>' + esc(adminEmail) +
-      '</strong>. Gespeicherte Änderungen bleiben erhalten. <a href="/cdn-cgi/access/logout">Abmelden</a>';
+    const session = app.querySelector(".admin-note");
+    session.classList.add("admin-session");
+    session.innerHTML =
+      '<div class="admin-session-identity"><span class="admin-session-icon" aria-hidden="true">' + icon("check") +
+      '</span><div><span class="admin-session-label">Angemeldet als</span> ' +
+      '<strong class="admin-session-email">' + esc(adminEmail).replace("@", "@<wbr>") +
+      '</strong></div></div><a class="btn secondary" href="/cdn-cgi/access/logout">Abmelden</a>';
     app.querySelectorAll('button[type="submit"]').forEach(button => {
       if (button.textContent === "In Vorschau speichern") button.textContent = "Speichern";
     });

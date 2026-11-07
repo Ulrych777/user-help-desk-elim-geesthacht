@@ -1,5 +1,9 @@
 # Gestaltung des Elim Kirche Serviceportals
 
+Am 7. November 2026 wurden Typografie und Formulargestaltung vereinheitlicht: Eine gemeinsame Systemschrift gilt für Navigation, Inhalte, Eingaben und Schaltflächen. Zentrale CSS-Variablen legen 14 px für Beschriftungen und Hilfetexte, 16 px für Fließtext und Eingaben, 20 px für Abschnittstitel, 24 px für Kartentitel und 28–36 px für Seitentitel fest. Die große Einstiegsfrage auf der Startseite behält ihre hervorgehobene Größe. Abstände und Rundungen folgen gemeinsamen Vorgaben; die Schriftgrößen skalieren mit der Browser-Grundeinstellung.
+
+Die Kontaktkachel nutzt zwei gleich große Textabsätze ohne wiederholten Antwort-Hinweis. Der Anmeldestatus in der Verwaltung erscheint als helle Karte mit dunkelblauem Text, Kontoadresse und Abmelde-Schaltfläche. Gelbe Warnfarben bleiben damit aus dem normalen Anmeldestatus entfernt. Startseite, Bereiche, Formulare, Anleitungen und Verwaltung verwenden dieselben Textrollen.
+
 Stand 5. November 2026. Die Startseite orientiert sich wieder an der erneut bereitgestellten Vorlage **E · Geteiltes Layout / Service-Station**. Der [Browserabgleich](design/startseite-mockup-abgleich.png) zeigt die Umsetzung.
 
 Links stehen auf dunkelblauem Hintergrund die große Frage, ein kurzer Einstiegstext und das Suchfeld. Darunter erscheint die rechteckige offene Tür mit warmem Innenlicht, Pflanze, Briefsymbol und Werkzeug. Die linke Suchfläche bleibt beim Scrollen auf breiten und ausreichend hohen Bildschirmen erreichbar und endet vor dem Footer.

@@ -242,6 +242,17 @@ try {
   assert.equal(await publicPage.locator(".area-card").count(), 3);
   assert.equal((await publicPage.goto(base + "/admin/")).status(), 401);
   await page.goto(base + "/admin/#admin/area/it");
+  await page.locator(".admin-session").waitFor();
+  const sessionAppearance = await page.locator(".admin-session").evaluate(session => ({
+    background: getComputedStyle(session).backgroundImage,
+    panelBackground: getComputedStyle(document.querySelector(".panel")).backgroundImage,
+    emailFont: getComputedStyle(session.querySelector("strong")).fontFamily,
+    bodyFont: getComputedStyle(document.body).fontFamily,
+    logout: session.querySelector("a").getAttribute("href")
+  }));
+  assert.equal(sessionAppearance.background, sessionAppearance.panelBackground);
+  assert.equal(sessionAppearance.emailFont, sessionAppearance.bodyFont);
+  assert.equal(sessionAppearance.logout, "/cdn-cgi/access/logout");
   await page.locator("#area-name").fill("IT dauerhaft");
   await page.getByRole("button", { name: "Speichern", exact: true }).click();
   await page.waitForURL("**/#admin/areas");
@@ -272,6 +283,19 @@ try {
   await publicPage.reload();
   await publicPage.locator("#request-form").waitFor();
   assert.equal(await publicPage.locator("#request-title").textContent(), "Microsoft dauerhaft");
+  const contactAppearance = await publicPage.locator(".aside").evaluate(aside => ({
+    paragraphs: [...aside.querySelectorAll("p")].map(p => ({
+      size: getComputedStyle(p).fontSize,
+      family: getComputedStyle(p).fontFamily
+    })),
+    bodyFamily: getComputedStyle(document.body).fontFamily,
+    bodySize: getComputedStyle(document.body).fontSize
+  }));
+  assert.equal(contactAppearance.paragraphs.length, 2, "Contact card should explain delivery and reply once each");
+  for (const paragraph of contactAppearance.paragraphs) {
+    assert.equal(paragraph.size, contactAppearance.bodySize);
+    assert.equal(paragraph.family, contactAppearance.bodyFamily);
+  }
   await page.goto(base + "/admin/#admin/area/it");
   const buffer = await page.evaluate(() => {
     const canvas = document.createElement("canvas"); canvas.width = 200; canvas.height = 200;
