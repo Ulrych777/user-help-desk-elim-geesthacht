@@ -9,7 +9,7 @@
         "type": "library",
         "id": "it"
       },
-      "email": "it@example.org",
+      "email": "glenn.ritter@elimgeesthacht.de",
       "published": true,
       "categories": [
         {
@@ -35,7 +35,7 @@
         "type": "library",
         "id": "house"
       },
-      "email": "hausmeister@example.org",
+      "email": "glenn.ritter@elimgeesthacht.de",
       "published": true,
       "categories": [
         {
@@ -57,7 +57,7 @@
         "type": "library",
         "id": "finance"
       },
-      "email": "finanzen@example.org",
+      "email": "glenn.ritter@elimgeesthacht.de",
       "published": true,
       "categories": [
         {

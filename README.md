@@ -31,9 +31,12 @@ Eine Versionsnummer verhindert das Überschreiben neuerer Änderungen durch
 einen älteren Browser-Tab. Bei Konflikten oder abgelaufener Anmeldung bleiben
 die Eingaben im Editor erhalten.
 
-**E-Mail-Versand ist weiterhin simuliert.** Anfragendaten und Anfrageanhänge
-werden nicht versandt oder dauerhaft gespeichert. Empfängeradressen unter
-example.org sind noch keine echten Zuständigkeiten.
+Der echte E-Mail-Versand über Resend ist implementiert und wird erst aktiviert,
+wenn die erforderlichen Worker-Secrets vorhanden sind. In der Testphase gehen
+alle Anfragen an glenn.ritter@elimgeesthacht.de. Der Absender heißt Serviceportal;
+die E-Mail-Adresse des Anfragenden wird als Reply-To gesetzt.
+Der Portalserver speichert weder Nachrichtentexte noch Anfrageanhänge dauerhaft.
+Details und Aktivierung: [E-Mail-Versand](docs/EMAIL-VERSAND.md).
 
 ## Inhalte und Quellcode
 
@@ -86,6 +89,7 @@ veröffentlicht. Ein GitHub-Push allein löst kein Deployment aus.
 
     npm run check:preview
     npm run test:portal
+    npm run test:mail
     node scripts/check-prototype.cjs
     git add <bearbeitete-Dateien>
     git commit -m "Änderung beschreiben"
@@ -109,5 +113,6 @@ normalisierte Katalog-API bestehen. npm run dev und node scripts/check-catalog.c
 prüfen diesen getrennten Ablauf. Sie ist nicht die maßgebliche Entwicklungsseite.
 
 Weitere Informationen: [Administration](docs/ADMINISTRATION.md),
+[E-Mail-Versand](docs/EMAIL-VERSAND.md),
 [Projektplan](docs/PROJEKTPLAN.md), [Wiederherstellung](docs/WIEDERHERSTELLUNG.md),
 [Bildherkunft](prototype/assets/README.md).

@@ -5,6 +5,14 @@ export interface PortalEnv extends AccessEnv {
   MEDIA: R2Bucket;
   ASSETS: Fetcher;
   PORTAL_MODE?: string;
+  MAIL_ENABLED?: string;
+  RESEND_API_KEY?: string;
+  RESEND_FROM?: string;
+  MAIL_TEST_TO?: string;
+  PUBLIC_HOSTNAME?: string;
+  TURNSTILE_SITE_KEY?: string;
+  TURNSTILE_SECRET_KEY?: string;
+  REQUEST_RATE_LIMITER?: RateLimit;
 }
 type Category = { id: string; name: string };
 type Image = { type: "library"; id: string } | { type: "stored"; src: string; name: string } | null;
@@ -13,7 +21,7 @@ type Field = { id: string; label: string; type: string; required: boolean; optio
 type GuideImage = { id: string; src: string; alt: string; caption: string; afterParagraph: number };
 type Concern = { id: string; area: string; title: string; description: string; type: string; keywords: string; categories: string[]; upload: boolean; published: boolean; fields: Field[]; guideText: string; guideImages: GuideImage[] };
 export type PortalState = { areas: Area[]; forms: Concern[] };
-class PortalError extends Error {
+export class PortalError extends Error {
   constructor(public status: number, message: string) { super(message); }
 }
 const fail = (message: string): never => { throw new PortalError(400, message); };
@@ -105,12 +113,20 @@ async function load(env: PortalEnv) {
   if (!row) throw new PortalError(503, "Die Portalverwaltung wird noch vorbereitet.");
   return { version: row.version, ...validatePortal(JSON.parse(row.data_json)) };
 }
+export { load as loadPortalState, body as readBoundedBody };
+export function submissionSettings(env: PortalEnv) {
+  return {
+    enabled: !!(env.MAIL_ENABLED === "true" && env.RESEND_API_KEY && env.RESEND_FROM &&
+      env.TURNSTILE_SECRET_KEY && env.TURNSTILE_SITE_KEY && env.REQUEST_RATE_LIMITER && env.PUBLIC_HOSTNAME),
+    siteKey: env.TURNSTILE_SITE_KEY || "",
+  };
+}
 function published(state: PortalState) {
   const areas = state.areas.filter(a => a.published).map(({ email: _email, ...area }) => area);
   const forms = state.forms.filter(f => f.published && areas.some(a => a.id === f.area));
   return { areas, forms };
 }
-async function body(request: Request, maximum: number): Promise<Uint8Array> {
+async function body(request: Request, maximum: number): Promise<Uint8Array<ArrayBuffer>> {
   if (Number(request.headers.get("content-length")) > maximum) throw new PortalError(413, "Die Datei oder Anfrage ist zu groß.");
   const reader = request.body?.getReader();
   if (!reader) fail("Leere Anfrage.");
@@ -175,10 +191,10 @@ export async function handlePortal(request: Request, env: PortalEnv): Promise<Re
     }
     if (path === "/api/portal" && request.method === "GET") {
       const state = await load(env);
-      return json({ version: state.version, ...published(state) });
+      return json({ version: state.version, ...published(state), submission: submissionSettings(env) });
     }
     if (path === "/api/admin/portal" && request.method === "GET")
-      return json({ ...await load(env), email });
+      return json({ ...await load(env), email, defaultRecipient: env.MAIL_TEST_TO || "", submission: submissionSettings(env) });
     if (path === "/api/admin/portal" && request.method === "PUT") {
       if (!request.headers.get("content-type")?.startsWith("application/json"))
         throw new PortalError(415, "JSON erwartet.");

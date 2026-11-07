@@ -11,7 +11,8 @@ nächste Änderung. Die vollständige, geschützte Verwaltung gehört ausdrückl
   veröffentlichte Seite lädt ihren versionierten Inhaltsstand aus D1. Alle neun
   ursprünglichen Anliegen und die Admin-Editoren erhalten. Nicht durch den
   unvollständigen Katalog der alten API-Testumgebung ersetzen.
-- Vor Veröffentlichung npm run check:preview, npm run test:portal und
+- Vor Veröffentlichung npm run check:preview, npm run test:portal,
+  npm run test:mail und
   node scripts/check-prototype.cjs ausführen. Die letzte Prüfung betrifft die
   eigenständige Offline-Datei; die persistente Seite wird durch test:portal geprüft.
 - Nach beauftragten Änderungen einen aussagekräftigen Commit erstellen und main
@@ -30,7 +31,19 @@ nächste Änderung. Die vollständige, geschützte Verwaltung gehört ausdrückl
   JWT-Prüfung schützen. Keine lokale Auth-Umgehung einbauen. Admin-Adressen müssen
   Access-Policy und ADMIN_EMAILS erfüllen. Empfängeradressen, Entwürfe und
   unveröffentlichte Bilder nicht öffentlich liefern.
-- E-Mail-Versand ist weiterhin simuliert und wird nicht als fertig dargestellt.
+- Der echte E-Mail-Versand benötigt RESEND_API_KEY und TURNSTILE_SECRET_KEY als
+  Worker-Secrets sowie die Versandvariablen in wrangler.jsonc. Fehlende
+  Voraussetzungen sperren den Versand. Erst nach erfolgreicher Annahme durch den
+  Versanddienst eine Bestätigung anzeigen; Annahme nicht als Zustellung ausgeben.
+- In der aktuellen Testphase alle Anfragen über MAIL_TEST_TO an
+  glenn.ritter@elimgeesthacht.de leiten. Diesen Empfänger-Override nicht ohne
+  ausdrücklichen Auftrag entfernen. Auch die gespeicherten Bereichsempfänger
+  wurden auf diese Adresse gestellt. Dienste/Secrets der Ehrenamtplattform
+  nicht verändern und keine Schlüssel aus deren Worker auslesen.
+- Anfragen und Anhänge nicht dauerhaft speichern. Es gibt nur kurzlebige
+  technische Versandbelege ohne Nachrichtentexte, Adressen oder Dateien. Einen
+  verlorenen Versandstatus über dieselbe Anfragekennung erneut prüfen/senden,
+  nicht unbemerkt eine neue Kennung erzeugen und damit Doppelversand riskieren.
 
 Die benannte Wrangler-Umgebung preview veröffentlicht die vollständige Seite auf
 serviceportal.glennritter.de. Die Umgebung test ist der separate API-Entwicklungsstand.

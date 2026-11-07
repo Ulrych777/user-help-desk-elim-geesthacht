@@ -1,4 +1,5 @@
 import { handlePortal, type PortalEnv } from "./portal.js";
+import { handleSubmission, cleanupSubmissionReceipts } from "./mail.js";
 
 interface Env extends PortalEnv {
   DB: D1Database;
@@ -133,6 +134,7 @@ export default {
 
     try {
       if (env.PORTAL_MODE === "persistent") {
+        if (url.pathname === "/api/requests") return await handleSubmission(request, env);
         const response = await handlePortal(request, env);
         if (response) return response;
       }
@@ -153,5 +155,8 @@ export default {
         { status: 500 },
       );
     }
+  },
+  async scheduled(_controller: ScheduledController, env: Env): Promise<void> {
+    await cleanupSubmissionReceipts(env);
   },
 };

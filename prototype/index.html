@@ -1545,6 +1545,8 @@ const usesCatalogApi = document.body.dataset.catalogSource === "api";
 const usesPortalApi = document.body.dataset.catalogSource === "portal";
 const adminDocument = usesPortalApi && document.body.dataset.admin === "true";
 let portalVersion = 0, adminEmail = "";
+let mailSettings = { enabled: false, siteKey: "" }, defaultRecipient = "";
+let challengeScript;
 let catalogReady = !usesCatalogApi && !usesPortalApi;
 const esc = (value) =>
   String(value ?? "").replace(
@@ -2190,12 +2192,41 @@ function guideContent(form) {
     )
     .join("");
 }
-function requestMarkup(form) {
+function prototypeRequestMarkup(form) {
   const area = areaById(form.area);
   const heading = `<div class="page-heading dark"><span class="tag">${esc(area.name)}</span> <span class="tag ${isGuide(form) ? "guide" : ""}">${typeLabel(form)}</span><h2 id="request-title" style="font-size:clamp(26px,4vw,36px)">${esc(form.title)}</h2><p>${esc(form.description)}</p></div>`;
   if (isGuide(form))
     return `<div class="guide-layout">${heading}<article class="panel guide-article" aria-label="Anleitungstext">${guideContent(form)}</article><form class="panel guide-contact" id="request-form"><h3>Du brauchst noch Hilfe?</h3><p>Schreib uns, wenn deine Frage noch offen ist.</p><p class="small muted">Bitte nur Beispieldaten eingeben. Felder mit * sind Pflichtfelder.</p>${field("Deine E-Mail-Adresse *", "request-email", input("request-email", "", true, "email"))}${field("Betreff *", "request-subject", input("request-subject", `Frage zur Anleitung: ${form.title}`.slice(0, 300), true))}${field("Nachricht *", "request-description", '<textarea id="request-description" required maxlength="5000" placeholder="Was hat nicht geklappt oder wobei brauchst du noch Hilfe?"></textarea>', "Bitte keine Passwörter oder vertraulichen Informationen eintragen.")}<div class="error" id="request-error" role="alert"></div><p class="small muted">Diese Vorschau verschickt keine E-Mails und speichert keine Eingaben.</p><button class="btn" type="submit">E-Mail-Versand simulieren ${icon("arrow")}</button></form></div>`;
   return `${heading}<div class="layout"><form class="panel" id="request-form"><h3>Deine Angaben</h3><p class="small muted">Bitte nur Beispieldaten eingeben. Felder mit * sind Pflichtfelder.</p><div class="form-grid">${field("Dein Name *", "request-name", input("request-name", "", true))}${field("Deine E-Mail-Adresse *", "request-email", input("request-email", "", true, "email"))}</div>${field("Betreff *", "request-subject", input("request-subject", form.title, true))}${form.fields.map(customField).join("")}${field("Deine Nachricht *", "request-description", '<textarea id="request-description" required maxlength="5000" placeholder="Was ist passiert oder wobei können wir dich unterstützen?"></textarea>', "Bitte keine Passwörter, vertraulichen Finanzunterlagen oder Seelsorgeinformationen eintragen.")}${form.upload ? `<div class="upload">${field("Dateien hinzufügen (optional)", "request-files", '<input id="request-files" type="file" multiple accept="image/jpeg,image/png,image/webp,application/pdf">', "Bis zu 3 Dateien, insgesamt höchstens 10 MB. JPG, PNG, WebP oder PDF.")}<p id="file-summary" class="small muted" aria-live="polite"></p></div>` : ""}<div class="error" id="request-error" role="alert"></div><p class="small muted">Die spätere Anfrage geht an das zuständige Team. In dieser Vorschau werden Eingaben und Dateien weder übertragen noch gespeichert.</p><button class="btn" type="submit">Absenden simulieren ${icon("arrow")}</button></form><aside class="aside"><h3>Dein Kontakt zum Team</h3><p>Im fertigen Portal geht deine Anfrage per E-Mail an das zuständige Team für ${esc(area.name)}.</p><p>Die Antwort erhältst du an deine E-Mail-Adresse.</p><p class="small">Diese Vorschau zeigt den Ablauf. Sie verschickt keine E-Mails.</p></aside></div>`;
+}
+function requestMarkup(form) {
+  const html = prototypeRequestMarkup(form);
+  if (!usesPortalApi) return html;
+  return html
+    .replaceAll("Bitte nur Beispieldaten eingeben. Felder mit * sind Pflichtfelder.", "Felder mit * sind Pflichtfelder.")
+    .replace("Diese Vorschau verschickt keine E-Mails und speichert keine Eingaben.",
+      "Deine Nachricht wird an das zuständige Team übermittelt. Du erhältst die Antwort an deine E-Mail-Adresse.")
+    .replace("Die spätere Anfrage geht an das zuständige Team. In dieser Vorschau werden Eingaben und Dateien weder übertragen noch gespeichert.",
+      "Deine Angaben und Anhänge werden per E-Mail an das zuständige Team übermittelt.")
+    .replace("Im fertigen Portal geht deine Anfrage per E-Mail an das zuständige Team für",
+      "Deine Anfrage geht per E-Mail an das zuständige Team für")
+    .replace("Diese Vorschau zeigt den Ablauf. Sie verschickt keine E-Mails.", "Die Antwort erhältst du direkt per E-Mail.")
+    .replace("E-Mail-Versand simulieren", "Nachricht senden")
+    .replace("Absenden simulieren", "Anfrage senden");
+}
+function loadChallengeScript() {
+  if (window.turnstile) return Promise.resolve();
+  if (!challengeScript) {
+    challengeScript = new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+      script.async = true;
+      script.onload = resolve;
+      script.onerror = () => { script.remove(); challengeScript = undefined; reject(new Error("Die Sicherheitsprüfung konnte nicht geladen werden.")); };
+      document.head.append(script);
+    });
+  }
+  return challengeScript;
 }
 function renderRequest(formId) {
   const form = publicForms().find((item) => item.id === formId);
@@ -2211,15 +2242,47 @@ function renderRequest(formId) {
   if (slot.dataset.form === form.id && slot.querySelector("#request-form"))
     return;
   slot.dataset.form = form.id;
+  if (slot.dataset.widget && window.turnstile) window.turnstile.remove(slot.dataset.widget);
+  delete slot.dataset.widget;
   slot.innerHTML = requestMarkup(form);
+  const requestForm = $("request-form");
+  let verificationToken = "", sending = false;
+  const requestId = crypto.randomUUID();
+  if (usesPortalApi) {
+    const honeypot = document.createElement("div");
+    honeypot.className = "sr-only";
+    honeypot.setAttribute("aria-hidden", "true");
+    honeypot.innerHTML = '<label>Website<input name="website" tabindex="-1" autocomplete="off"></label>';
+    requestForm.append(honeypot);
+    const verification = document.createElement("div");
+    verification.id = "request-verification";
+    requestForm.querySelector('button[type="submit"]').before(verification);
+    if (!mailSettings.enabled) {
+      verification.textContent = "Der E-Mail-Versand wird noch eingerichtet. Bitte versuche es später erneut.";
+      requestForm.querySelector('button[type="submit"]').disabled = true;
+    } else {
+      loadChallengeScript().then(() => {
+        if (!requestForm.isConnected) return;
+        slot.dataset.widget = window.turnstile.render(verification, {
+          sitekey: mailSettings.siteKey, action: "service-request", theme: "light",
+          callback: token => { verificationToken = token; },
+          "expired-callback": () => { verificationToken = ""; },
+          "error-callback": () => { verificationToken = ""; $("request-error").textContent = "Die Sicherheitsprüfung ist fehlgeschlagen. Bitte erneut versuchen."; },
+        });
+      }).catch(error => {
+        if (requestForm.isConnected) $("request-error").textContent = error.message;
+      });
+    }
+  }
   const upload = $("request-files");
   upload?.addEventListener("change", () => {
     $("file-summary").textContent = Array.from(upload.files)
       .map((file) => file.name)
       .join(", ");
   });
-  $("request-form").addEventListener("submit", (event) => {
+  $("request-form").addEventListener("submit", async (event) => {
     event.preventDefault();
+    if (sending) return;
     const error = $("request-error"),
       files = Array.from(upload?.files || []);
     error.textContent = "";
@@ -2259,6 +2322,59 @@ function renderRequest(formId) {
         return;
       }
     }
+    if (usesPortalApi) {
+      if (!mailSettings.enabled || !verificationToken) {
+        error.textContent = "Bitte zuerst die Sicherheitsprüfung abschließen.";
+        return;
+      }
+      const fields = {};
+      for (const item of isGuide(form) ? [] : form.fields) {
+        fields[item.id] = item.type === "multiselect"
+          ? Array.from(requestForm.elements).filter(el => el.name === "custom-" + item.id && el.checked).map(el => el.value)
+          : $("custom-" + item.id).value;
+      }
+      const data = new FormData();
+      data.set("formId", form.id);
+      data.set("requestId", requestId);
+      data.set("name", $("request-name")?.value || "");
+      data.set("email", $("request-email").value);
+      data.set("subject", $("request-subject").value);
+      data.set("message", $("request-description").value);
+      data.set("fields", JSON.stringify(fields));
+      data.set("website", requestForm.elements.namedItem("website").value);
+      data.set("turnstileToken", verificationToken);
+      files.forEach(file => data.append("files", file));
+      const controls = Array.from(requestForm.querySelectorAll("input, textarea, select, button"));
+      const disabled = controls.map(control => control.disabled);
+      const button = requestForm.querySelector('button[type="submit"]'), label = button.innerHTML;
+      sending = true;
+      controls.forEach(control => { control.disabled = true; });
+      button.textContent = "Wird gesendet …";
+      try {
+        const response = await fetch("/api/requests", {
+          method: "POST", body: data, signal: AbortSignal.timeout(30000),
+        });
+        const result = await response.json();
+        if (!response.ok || !result.accepted) throw new Error(result.error || "Der Versand konnte nicht bestätigt werden.");
+        confirmation = { form: form.id, reference: result.reference, accepted: true };
+        requestForm.reset();
+        delete slot.dataset.form;
+        if (slot.dataset.widget && window.turnstile) window.turnstile.remove(slot.dataset.widget);
+        delete slot.dataset.widget;
+        location.hash = "bestaetigung";
+      } catch (sendError) {
+        error.textContent = sendError.name === "TimeoutError"
+          ? "Der Versand konnte noch nicht bestätigt werden. Bitte mit denselben Angaben erneut versuchen."
+          : sendError.message || "Der Versand ist fehlgeschlagen. Bitte erneut versuchen.";
+        verificationToken = "";
+        if (slot.dataset.widget && window.turnstile) window.turnstile.reset(slot.dataset.widget);
+      } finally {
+        sending = false;
+        controls.forEach((control, index) => { control.disabled = disabled[index]; });
+        button.innerHTML = label;
+      }
+      return;
+    }
     confirmation = {
       form: form.id,
       reference: `VORSCHAU-${String(++sequence).padStart(3, "0")}`,
@@ -2267,7 +2383,7 @@ function renderRequest(formId) {
     location.hash = "bestaetigung";
   });
 }
-function renderConfirmation() {
+function renderPrototypeConfirmation() {
   const form = publicForms().find((item) => item.id === confirmation?.form);
   if (!form) {
     confirmation = null;
@@ -2278,6 +2394,18 @@ function renderConfirmation() {
   delete slot.dataset.form;
   dialog.dataset.shareForm = form.id;
   slot.innerHTML = `<section class="panel success"><span class="success-icon">${icon("check")}</span><p class="eyebrow">${esc(confirmation.reference)}</p><h2 id="request-title">So sieht die Bestätigung aus.</h2><p>Die Vorschau ist abgeschlossen. Es wurde keine E-Mail verschickt. Deine Eingaben und Dateien wurden nicht gespeichert.</p><p class="muted">Im fertigen Portal erscheint hier die Bestätigung nach Annahme durch den Versanddienst. Die Bearbeitung erfolgt anschließend per E-Mail.</p><div class="actions"><a class="btn" href="#home">Zur Startseite</a><a class="btn secondary" href="#form/${esc(form.id)}">${isGuide(form) ? "Anleitung erneut ansehen" : "Formular erneut ansehen"}</a></div></section>`;
+}
+
+function renderConfirmation() {
+  renderPrototypeConfirmation();
+  if (usesPortalApi && confirmation?.accepted) {
+    slot.innerHTML = '<section class="panel success"><span class="success-icon">' + icon("check") +
+      '</span><p class="eyebrow">' + esc(confirmation.reference) +
+      '</p><h2 id="request-title">Deine Anfrage wurde übergeben.</h2>' +
+      '<p>Der Versanddienst hat deine Nachricht angenommen. Die Antwort erhältst du an deine angegebene E-Mail-Adresse.</p>' +
+      '<p class="muted">Bitte bewahre die Vorgangsnummer für Rückfragen auf.</p>' +
+      '<a class="btn" href="#home">Zur Startseite</a></section>';
+  }
 }
 
 // Native modale Dialoge und temporäre Kopierbestätigung.
@@ -2551,7 +2679,7 @@ function renderAreaEditor(id) {
   const area = existing || {
     name: "",
     description: "",
-    email: "",
+    email: usesPortalApi ? defaultRecipient : "",
     icon: "it",
     image: null,
     published: false,
@@ -3090,6 +3218,9 @@ async function loadPortal() {
       throw new Error("Ungültiger Portalstand");
     portalVersion = state.version;
     adminEmail = state.email || "";
+    mailSettings = state.submission || { enabled: false, siteKey: "" };
+    defaultRecipient = state.defaultRecipient || "";
+    document.querySelector(".prototype-note").textContent = "Serviceportal · Testbetrieb";
     areas.splice(0, areas.length, ...state.areas);
     forms.splice(0, forms.length, ...state.forms);
     catalogReady = true;

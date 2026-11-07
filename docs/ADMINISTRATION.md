@@ -62,5 +62,6 @@ angelegt; der veröffentlichte Worker enthält keinen Testzugang.
 Zustellung des echten Access-Anmeldecodes und erste Benutzeranmeldung sind im
 Browser des Benutzers zu prüfen. Der öffentliche Host ist aus der Agent-Umgebung
 derzeit durch deren Netzwerkpolicy blockiert. Die bestehende Ehrenamt-Anwendung
-und deren Policies bleiben unverändert. E-Mail-Versand für Serviceanfragen ist
-weiterhin simuliert.
+und deren Policies bleiben unverändert. Der echte E-Mail-Versand benötigt die
+gesonderten Secrets und Einstellungen aus EMAIL-VERSAND.md. Die aktuelle
+Testphase leitet sämtliche Bereiche an glenn.ritter@elimgeesthacht.de weiter.

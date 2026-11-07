@@ -40,8 +40,8 @@ Die Rekonstruktion übernimmt diese Anordnung und die zuletzt überarbeitete Fel
 - Cloudflare R2 speichert dauerhafte Bereichs- und Anleitungsbilder getrennt von temporären Anfrageanhängen.
 - Cloudflare Access schützt die Verwaltungsseiten und die zugehörigen Admin-API-Endpunkte. Der bisherige Hash-Pfad für die Verwaltung wird dafür auf eine serverseitig erkennbare Route umgestellt.
 - Cloudflare Turnstile, serverseitige Ratenbegrenzung und ein unsichtbares Formularfeld schützen öffentliche Anfragen vor automatisiertem Missbrauch.
-- Eine Queue übernimmt den Versand mit Wiederholungsversuchen. Temporäre Anhänge werden über R2-Schlüssel referenziert und nach erfolgreichem Versand gelöscht; ein geplanter Cron-Lauf entfernt liegen gebliebene Dateien nach einer festgelegten Frist.
-- Der ausgehende E-Mail-Versand erfolgt über eine HTTPS-fähige Versandlösung. Cloudflare Workers können keinen klassischen SMTP-Server direkt ansprechen. Als Varianten kommen ein Transaktionsmaildienst oder Microsoft Graph für ein vorhandenes Microsoft-365-Postfach infrage.
+- Die erste Versandstufe übermittelt synchron an Resend und verwendet stabile Anfragekennungen gegen doppelten Versand. Anfrageanhänge bleiben ausschließlich im Arbeitsspeicher. Eine persistente Queue wird derzeit nicht verwendet; bei Fehlern bleiben Eingaben im Browser für einen erneuten Versuch erhalten.
+- Der ausgehende E-Mail-Versand verwendet Resend über HTTPS. Die aktive Testphase leitet alle Anliegen an glenn.ritter@elimgeesthacht.de; der Start benötigt einen eigenen RESEND_API_KEY im Serviceportal-Worker.
 - Geheimnisse wie Versand- und API-Zugangsdaten werden ausschließlich als Cloudflare-Secrets hinterlegt und nicht in Git gespeichert.
 
 ## Nächste Projektphasen
@@ -49,9 +49,9 @@ Die Rekonstruktion übernimmt diese Anordnung und die zuletzt überarbeitete Fel
 1. Die vollständige Entwicklungsseite unter https://serviceportal.glennritter.de wird aus GitHub main veröffentlicht. Die Verwaltung unter /admin/ ist durch eine eigene Cloudflare-Access-Anwendung und zusätzliche JWT-Prüfung im Worker geschützt. Die Gemeinde-Domain bleibt bis zur Abnahme unverändert.
 2. Die vollständigen Ausgangsinhalte (drei Bereiche, neun Anliegen) sind dauerhaft in D1 übernommen. Die öffentliche Seite lädt veröffentlichte Inhalte, die Verwaltung speichert Inhalte und R2-Bilder dauerhaft. Parallele Änderungen werden über Versionsprüfung abgefangen.
 3. Cloudflare Access und serverseitiger Schutz der Admin-Seiten und Admin-API sind eingerichtet; die erste echte Anmeldung per Code wird vom Benutzer im Browser geprüft.
-4. E-Mail-Weg auswählen und den vollständigen Anfrageablauf mit Queue, Anhängen, Wiederholungsversuchen und automatischer Löschung umsetzen.
-5. Turnstile, Ratenbegrenzung, verbindliche Datei- und Eingabeprüfung sowie Datenschutzinformationen ergänzen.
+4. E-Mail-Versand mit Resend, Anhängen, geprüften Feldern, Idempotenz und Fehleranzeige ist implementiert. Aktivierung und echter Zustelltest benötigen den Resend-Schlüssel im Worker. Technische Versandbelege ohne Nachrichteninhalte werden nach sieben Tagen bereinigt.
+5. Turnstile, Ratenbegrenzung sowie serverseitige Datei- und Eingabeprüfung sind implementiert. Datenschutz- und Kontaktinformationen vor einem regulären Gemeindebetrieb vervollständigen.
 6. Mit den zuständigen Teams auf Desktop und Smartphone testen: Zuständigkeit, Suchtreffer, Pflichtangaben, Bildverwaltung, Anhänge, Direktlinks und Datenschutz.
 7. Nach funktionaler Abnahme den gestalterischen Feinschliff durchführen und erst danach die Gemeinde-Domain umstellen. Regelmäßige Sicherungen, Zuständigkeiten und Wartung dokumentieren.
 
-Die vollständige Entwicklungsseite lädt ihren Inhaltsstand aus D1. Die geschützte Verwaltung speichert Änderungen und Medien dauerhaft. Die eigenständige Prototypdatei bleibt offline nutzbar. Produktiver E-Mail-Versand folgt als nächster Entwicklungsschritt.
+Die vollständige Entwicklungsseite lädt ihren Inhaltsstand aus D1. Die geschützte Verwaltung speichert Änderungen und Medien dauerhaft. Die eigenständige Prototypdatei bleibt offline nutzbar. Der Resend-Versand ist vorbereitet und wird bei vollständiger Secret-Konfiguration aktiviert; die tatsächliche Zustellung wird anschließend im Browser getestet.
