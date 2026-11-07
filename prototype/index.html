@@ -32,6 +32,12 @@
   --surface: linear-gradient(145deg, #fbf8f1, #f6f1e8 75%, #f1eade);
   --surface-shadow:
     0 1px 2px #77654c2b, 0 6px 10px -3px #67553c38, 0 14px 22px -9px #59462e42;
+  --card-inset-light:
+    inset 0 1px 2px #ffffffdd, inset 1px 0 3px #ffffff77,
+    inset -1px -2px 5px #9b886b24, inset 0 -1px 1px #8b76531a;
+  --card-inset-dark:
+    inset 0 1px 2px #ffffff38, inset 1px 0 3px #ffffff1a,
+    inset -1px -2px 5px #020d1c52, inset 0 -1px 1px #00000033;
 }
 * {
   box-sizing: border-box;
@@ -444,17 +450,35 @@ main[data-view="home"] {
     transform 0.16s,
     box-shadow 0.16s;
 }
-.area-card::after {
+.area-card,
+.request-card,
+.panel,
+.manage-card,
+.area-tools,
+.empty,
+.admin-note {
+  position: relative;
+  --card-inset: var(--card-inset-light);
+}
+.area-banner,
+.page-heading.dark,
+.aside {
+  position: relative;
+}
+.area-banner,
+.page-heading.dark,
+.aside,
+.admin-nav {
+  --card-inset: var(--card-inset-dark);
+}
+:is(.area-card, .request-card, .panel, .manage-card, .area-tools, .empty,
+    .admin-note, .area-banner, .page-heading.dark, .aside, .admin-nav)::after {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  box-shadow:
-    inset 0 1px 2px #ffffffdd,
-    inset 1px 0 3px #ffffff77,
-    inset -1px -2px 5px #9b886b24,
-    inset 0 -1px 1px #8b76531a;
+  box-shadow: var(--card-inset);
 }
 .area-card:hover {
   transform: translateY(-2px);
@@ -501,7 +525,7 @@ main[data-view="home"] {
   padding: 36px 40px;
   margin-bottom: 32px;
   color: white;
-  border-radius: 20px;
+  border-radius: var(--radius-card);
   background:
     radial-gradient(ellipse at top right, #34526c, transparent 75%), var(--deep);
   box-shadow: var(--surface-shadow);
@@ -961,6 +985,7 @@ figcaption {
   border: 1px solid var(--line-warm);
   border-radius: var(--radius-card);
   background: var(--surface);
+  box-shadow: var(--surface-shadow);
   color: var(--ink);
   font-size: var(--text-small);
 }
