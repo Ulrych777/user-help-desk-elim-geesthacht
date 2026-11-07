@@ -19,7 +19,6 @@
   --muted: #3f4b5a;
   --blue: #00458f;
   --accent-orange: #f49a43;
-  --accent-orange-light: #ffb96d;
   --deep: #0b2540;
   --bg: #eae5dd;
   --line: #d7dce0;
@@ -237,17 +236,6 @@ h3 {
 .btn.secondary:hover {
   background: #f0e8dc;
 }
-.btn.accent {
-  color: var(--deep);
-  background: linear-gradient(180deg, var(--accent-orange-light), var(--accent-orange));
-  border-color: #ce7b2c;
-  box-shadow: inset 0 1px 0 #ffffff66, 0 2px 0 #9c531529, 0 4px 8px #71451912;
-}
-.btn.accent:hover:not(:disabled) {
-  background: linear-gradient(180deg, #ffad50, #eb8830);
-  border-color: #b96b25;
-}
-.btn.accent:active:not(:disabled) { background: #eb8830; }
 .btn.ghost {
   background: transparent;
   color: var(--blue);
@@ -689,6 +677,17 @@ main[data-view="home"] {
 .page-heading.dark .tag {
   background: #ffffff1a;
   color: #edf2f7;
+}
+.area-banner-copy h1::after,
+.page-heading.dark h1::after,
+.page-heading.dark #request-title::after {
+  content: "";
+  display: block;
+  width: 48px;
+  height: 3px;
+  margin-top: 14px;
+  border-radius: 2px;
+  background: var(--accent-orange);
 }
 .layout {
   display: grid;

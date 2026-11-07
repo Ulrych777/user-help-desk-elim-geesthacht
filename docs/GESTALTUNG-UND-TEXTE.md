@@ -1,6 +1,6 @@
 # Gestaltung des Elim Kirche Serviceportals
 
-Orange aus den Illustrationen erscheint gezielt auf den Sende-Schaltflächen der Anfrage- und Anleitungskontaktformulare sowie auf „Bereich anlegen“ und „Anliegen anlegen“. Die warme orangefarbene Fläche trägt dunkelblaue Schrift; der Textkontrast bleibt auch beim Überfahren über 5,9:1. Die Akzentfarbe und ihre helle Verlaufsfarbe werden zentral über CSS-Variablen gepflegt. Die Auswahl hebt einzelne Hauptaktionen im bestehenden dunkelblau-cremefarbenen Erscheinungsbild hervor.
+Der orangefarbene Akzent aus den Illustrationen erscheint als kurze, 3 px hohe Linie unter den Titeln der dunkelblauen Bereichsbanner und Kopfkacheln für Formulare, Anleitungen und Verwaltung. Die Linie ist rein dekorativ. Schaltflächen verwenden wieder die bisherigen dunkelblauen und cremefarbenen Varianten.
 
 Leere Suchergebnisse erhalten eine freundliche Lupe mit leeren Karten und Pflanze im bestehenden 3D-Stil. Das transparente WebP-Motiv ist lokal eingebettet; es lädt keine externen Ressourcen. „Auf Spurensuche“ ergänzt den klaren Hinweis auf fehlende Treffer, und „Suche zurücksetzen“ leert Suchbegriff und gegebenenfalls Kategorie. Verweise auf allgemeine Anfragen bleiben entfernt. Bereiche ohne veröffentlichte Anliegen zeigen stattdessen „Hier ist noch Platz für Neues“ und führen zur Bereichsübersicht, damit ein leerer Bereich nicht als fehlerhafte Suche erscheint. Auf schmalen Bildschirmen stehen Illustration und Text untereinander.
 
