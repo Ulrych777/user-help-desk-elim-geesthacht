@@ -934,19 +934,7 @@ function renderConfirmation() {
 }
 
 function sentIllustration() {
-  return `<svg class="sent-illustration" viewBox="0 0 240 170" fill="none" aria-hidden="true">
-    <ellipse cx="120" cy="150" rx="74" ry="8" fill="#0b2540" opacity=".08"/>
-    <circle cx="116" cy="80" r="65" fill="#e7edf3"/>
-    <path d="M24 77h23M31 91h16M35 105h12" stroke="#91acc1" stroke-width="4" stroke-linecap="round"/>
-    <g class="sent-envelope">
-      <rect x="61" y="48" width="126" height="88" rx="12" fill="#fdf8f0" stroke="#355773" stroke-width="3"/>
-      <path d="m64 130 43-36m77 36-43-36" stroke="#c3cfd9" stroke-width="3"/>
-      <path d="m63 53 53 40a14 14 0 0 0 16 0l53-40" fill="#f4eadb" stroke="#355773" stroke-width="3" stroke-linejoin="round"/>
-      <circle cx="181" cy="53" r="22" fill="#f49a43" stroke="#fdf8f0" stroke-width="5"/>
-      <path d="m172 53 6 6 12-13" stroke="#0b2540" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-    </g>
-    <path d="M207 95v10m-5-5h10M63 24v8m-4-4h8" stroke="#f49a43" stroke-width="3" stroke-linecap="round"/>
-  </svg>`;
+  return `<img class="sent-illustration sent-envelope" src="${asset("anfrage-gesendet.webp")}" width="960" height="640" alt="" aria-hidden="true">`;
 }
 
 // Native modale Dialoge und temporäre Kopierbestätigung.

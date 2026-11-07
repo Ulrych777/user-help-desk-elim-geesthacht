@@ -895,7 +895,7 @@ legend {
 }
 .sent-illustration {
   display: block;
-  width: 220px;
+  width: 260px;
   max-width: 100%;
   height: auto;
   margin: 0 auto 16px;
@@ -903,7 +903,7 @@ legend {
 .success-sent .eyebrow { color: var(--muted); }
 @media (prefers-reduced-motion: no-preference) {
   .sent-envelope {
-    animation: letter-arrives 650ms cubic-bezier(.2,.7,.3,1) both;
+    animation: letter-arrives 650ms cubic-bezier(.2,.7,.3,1) backwards;
   }
   @media (hover: hover) and (pointer: fine) {
     a.area-card .area-art img { transition: transform 250ms ease; }
@@ -912,7 +912,7 @@ legend {
 }
 @keyframes letter-arrives {
   from { opacity: 0; transform: translate(-18px, 6px) rotate(-5deg); }
-  to { opacity: 1; transform: translate(0, 0) rotate(0); }
+  to { opacity: 1; transform: none; }
 }
 .success-icon {
   display: inline-flex;

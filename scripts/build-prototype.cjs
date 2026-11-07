@@ -16,6 +16,7 @@ const filenames = [
   "hintergrund-pflanze.webp",
   "wlan-einstellungen.svg",
   "suche-kein-treffer.webp",
+  "anfrage-gesendet.webp",
 ];
 const images = Object.fromEntries(
   filenames.map((filename) => [
