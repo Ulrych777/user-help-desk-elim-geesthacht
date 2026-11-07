@@ -729,6 +729,18 @@ input[type="file"]::file-selector-button {
 .upload .field {
   margin-bottom: 0;
 }
+.attachment-list { list-style: none; padding: 0; margin: 16px 0 8px; }
+.attachment-list li {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line-warm);
+}
+.attachment-details { flex: 1 1 140px; min-width: 0; }
+.attachment-name { display: block; overflow-wrap: anywhere; }
+.attachment-remove { flex: none; min-height: 40px; padding: 8px 12px; font-size: var(--text-small); }
 fieldset {
   min-width: 0;
   margin: 0 0 24px;
@@ -2500,7 +2512,7 @@ function prototypeRequestMarkup(form) {
   const heading = `<div class="page-heading dark"><span class="tag">${esc(area.name)}</span> <span class="tag ${isGuide(form) ? "guide" : ""}">${typeLabel(form)}</span><h2 id="request-title">${esc(form.title)}</h2><p>${esc(form.description)}</p></div>`;
   if (isGuide(form))
     return `<div class="guide-layout">${heading}<article class="panel guide-article" aria-label="Anleitungstext">${guideContent(form)}</article><form class="panel guide-contact" id="request-form"><h3>Du brauchst noch Hilfe?</h3><p>Schreib uns, wenn deine Frage noch offen ist.</p><p class="small muted">Bitte nur Beispieldaten eingeben. Felder mit * sind Pflichtfelder.</p>${field("Deine E-Mail-Adresse *", "request-email", input("request-email", "", true, "email"))}${field("Betreff *", "request-subject", input("request-subject", `Frage zur Anleitung: ${form.title}`.slice(0, 300), true))}${field("Nachricht *", "request-description", '<textarea id="request-description" required maxlength="5000" placeholder="Was hat nicht geklappt oder wobei brauchst du noch Hilfe?"></textarea>', "Bitte keine Passwörter oder vertraulichen Informationen eintragen.")}<div class="error" id="request-error" role="alert"></div><p class="small muted">Diese Vorschau verschickt keine E-Mails und speichert keine Eingaben.</p><button class="btn" type="submit">E-Mail-Versand simulieren ${icon("arrow")}</button></form></div>`;
-  return `${heading}<div class="layout"><form class="panel" id="request-form"><h3>Deine Angaben</h3><p class="small muted">Bitte nur Beispieldaten eingeben. Felder mit * sind Pflichtfelder.</p><div class="form-grid">${field("Dein Name *", "request-name", input("request-name", "", true))}${field("Deine E-Mail-Adresse *", "request-email", input("request-email", "", true, "email"))}</div>${field("Betreff *", "request-subject", input("request-subject", form.title, true))}${form.fields.map(customField).join("")}${field("Deine Nachricht *", "request-description", '<textarea id="request-description" required maxlength="5000" placeholder="Was ist passiert oder wobei können wir dich unterstützen?"></textarea>', "Bitte keine Passwörter, vertraulichen Finanzunterlagen oder Seelsorgeinformationen eintragen.")}${form.upload ? `<div class="upload">${field("Dateien hinzufügen (optional)", "request-files", '<input id="request-files" type="file" multiple accept="image/jpeg,image/png,image/webp,application/pdf">', "Bis zu 3 Dateien, insgesamt höchstens 10 MB. JPG, PNG, WebP oder PDF.")}<p id="file-summary" class="small muted" aria-live="polite"></p></div>` : ""}<div class="error" id="request-error" role="alert"></div><p class="small muted">Die spätere Anfrage geht an das zuständige Team. In dieser Vorschau werden Eingaben und Dateien weder übertragen noch gespeichert.</p><button class="btn" type="submit">Absenden simulieren ${icon("arrow")}</button></form><aside class="aside"><h3>Dein Kontakt zum Team</h3><p>Im fertigen Portal geht deine Anfrage per E-Mail an das zuständige Team für ${esc(area.name)}.</p><p>Die Antwort erhältst du an deine E-Mail-Adresse.</p><p class="small">Diese Vorschau zeigt den Ablauf. Sie verschickt keine E-Mails.</p></aside></div>`;
+  return `${heading}<div class="layout"><form class="panel" id="request-form"><h3>Deine Angaben</h3><p class="small muted">Bitte nur Beispieldaten eingeben. Felder mit * sind Pflichtfelder.</p><div class="form-grid">${field("Dein Name *", "request-name", input("request-name", "", true))}${field("Deine E-Mail-Adresse *", "request-email", input("request-email", "", true, "email"))}</div>${field("Betreff *", "request-subject", input("request-subject", form.title, true))}${form.fields.map(customField).join("")}${field("Deine Nachricht *", "request-description", '<textarea id="request-description" required maxlength="5000" placeholder="Was ist passiert oder wobei können wir dich unterstützen?"></textarea>', "Bitte keine Passwörter, vertraulichen Finanzunterlagen oder Seelsorgeinformationen eintragen.")}${form.upload ? `<div class="upload">${field("Dateien hinzufügen (optional)", "request-files", '<input id="request-files" type="file" multiple accept="image/jpeg,image/png,image/webp,application/pdf">', "Bis zu 3 Dateien, insgesamt höchstens 10 MB. JPG, PNG, WebP oder PDF.")}<ul id="request-file-list" class="attachment-list" aria-label="Ausgewählte Dateien" hidden></ul><p id="file-summary" class="small muted" aria-live="polite"></p></div>` : ""}<div class="error" id="request-error" role="alert"></div><p class="small muted">Die spätere Anfrage geht an das zuständige Team. In dieser Vorschau werden Eingaben und Dateien weder übertragen noch gespeichert.</p><button class="btn" type="submit">Absenden simulieren ${icon("arrow")}</button></form><aside class="aside"><h3>Dein Kontakt zum Team</h3><p>Im fertigen Portal geht deine Anfrage per E-Mail an das zuständige Team für ${esc(area.name)}.</p><p>Die Antwort erhältst du an deine E-Mail-Adresse.</p><p class="small">Diese Vorschau zeigt den Ablauf. Sie verschickt keine E-Mails.</p></aside></div>`;
 }
 function requestMarkup(form) {
   const html = prototypeRequestMarkup(form);
@@ -2578,10 +2590,32 @@ function renderRequest(formId) {
     }
   }
   const upload = $("request-files");
-  upload?.addEventListener("change", () => {
-    $("file-summary").textContent = Array.from(upload.files)
-      .map((file) => file.name)
-      .join(", ");
+  const renderAttachments = (notice = "") => {
+    const files = Array.from(upload?.files || []);
+    const list = $("request-file-list");
+    if (!list) return;
+    list.hidden = !files.length;
+    const size = bytes => new Intl.NumberFormat("de-DE", { maximumFractionDigits: 1 }).format(bytes / (bytes < 1024 * 1024 ? 1024 : 1024 * 1024)) + (bytes < 1024 * 1024 ? " KB" : " MB");
+    list.innerHTML = files.map((file, index) => `<li><div class="attachment-details"><span class="attachment-name">${esc(file.name)}</span><span class="small muted">${size(file.size)}</span></div><button class="btn secondary attachment-remove" type="button" data-remove-attachment="${index}" aria-label="${esc("Datei „" + file.name + "“ entfernen")}">Entfernen</button></li>`).join("");
+    $("file-summary").textContent = notice + (files.length ? `${files.length} ${files.length === 1 ? "Datei" : "Dateien"} ausgewählt · ${size(files.reduce((sum, file) => sum + file.size, 0))} insgesamt.` : "Keine Dateien ausgewählt.");
+  };
+  upload?.addEventListener("change", () => { renderAttachments(); $("request-error").textContent = ""; });
+  $("request-file-list")?.addEventListener("click", event => {
+    const button = event.target.closest("[data-remove-attachment]");
+    if (!button || sending) return;
+    const index = Number(button.dataset.removeAttachment), files = Array.from(upload.files);
+    if (!Number.isInteger(index) || !files[index]) return;
+    const removed = files[index], remaining = files.filter((_, position) => position !== index);
+    if (!remaining.length) upload.value = "";
+    else {
+      const transfer = new DataTransfer();
+      remaining.forEach(file => transfer.items.add(file));
+      upload.files = transfer.files;
+    }
+    renderAttachments(`„${removed.name}“ wurde entfernt. `);
+    $("request-error").textContent = "";
+    const next = $("request-file-list").querySelectorAll("[data-remove-attachment]");
+    (next[Math.min(index, next.length - 1)] || upload).focus();
   });
   $("request-form").addEventListener("submit", async (event) => {
     event.preventDefault();

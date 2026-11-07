@@ -276,6 +276,19 @@ try {
   await page.locator("#request-name").fill("Browser Test");
   await page.locator("#request-email").fill("browser@example.test");
   await page.locator("#request-description").fill("Diese Angaben müssen bei einem Versandfehler erhalten bleiben.");
+  await page.locator('#request-files').setInputFiles([
+    { name: 'behalten.pdf', mimeType: 'application/pdf', buffer: Buffer.from(await pdf.arrayBuffer()) },
+    { name: 'falsch.png', mimeType: 'image/png', buffer: Buffer.from(await png.arrayBuffer()) },
+  ]);
+  assert.equal(await page.locator('[data-remove-attachment]').count(), 2);
+  await page.getByRole('button', { name: 'Datei „falsch.png“ entfernen', exact: true }).click();
+  assert.deepEqual(await page.locator('#request-files').evaluate(input => [...input.files].map(file => file.name)), ['behalten.pdf']);
+  assert.equal(await page.locator('#request-name').inputValue(), 'Browser Test');
+  assert.equal(await page.locator('#request-description').inputValue(), 'Diese Angaben müssen bei einem Versandfehler erhalten bleiben.');
+  await page.getByRole('button', { name: 'Datei „behalten.pdf“ entfernen', exact: true }).press('Enter');
+  assert.equal(await page.locator('#request-files').evaluate(input => input.files.length), 0);
+  assert(await page.locator('#request-file-list').isHidden());
+  assert.equal(await page.locator('dialog[open]').count(), 1);
   await page.locator("#request-files").setInputFiles({ name: "test.pdf", mimeType: "application/pdf", buffer: Buffer.from(await pdf.arrayBuffer()) });
   await page.getByText("Sicherheitsprüfung (Test)", { exact: true }).waitFor();
   let connectionMode = 'network';
@@ -321,6 +334,7 @@ try {
   assert.equal(delivered.size, beforeBrowser + 1);
   assert(providerCalls.at(-1).payload.text.includes("Browser Test"));
   assert.equal(providerCalls.at(-1).payload.reply_to, "browser@example.test");
+  assert.deepEqual(providerCalls.at(-1).payload.attachments.map(file => file.filename), ['test.pdf']);
   assert.equal(await page.locator(".prototype-note").textContent(), "Serviceportal · Testbetrieb");
   assert.equal(new Set(attemptIds).size, 1, 'Transport errors must retain the same request ID');
   providerMode = 'success';

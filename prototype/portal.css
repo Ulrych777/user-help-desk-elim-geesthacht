@@ -721,6 +721,18 @@ input[type="file"]::file-selector-button {
 .upload .field {
   margin-bottom: 0;
 }
+.attachment-list { list-style: none; padding: 0; margin: 16px 0 8px; }
+.attachment-list li {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line-warm);
+}
+.attachment-details { flex: 1 1 140px; min-width: 0; }
+.attachment-name { display: block; overflow-wrap: anywhere; }
+.attachment-remove { flex: none; min-height: 40px; padding: 8px 12px; font-size: var(--text-small); }
 fieldset {
   min-width: 0;
   margin: 0 0 24px;

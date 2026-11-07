@@ -80,6 +80,13 @@ Erfolgsmeldung verlangt `accepted: true` und eine gültige Vorgangsnummer. Beim
 erneuten Senden bleibt dieselbe Anfragekennung bestehen, auch wenn die Antwort
 nach bereits erfolgreichem Versand verloren ging.
 
+Vor dem Senden zeigt das Formular die ausgewählten Anhänge mit Dateiname und
+Größe. Jede Datei lässt sich über „Entfernen“ einzeln aus der Auswahl nehmen.
+Die verbleibenden Dateien bleiben ausgewählt; nach dem Entfernen der letzten
+Datei kann auch dieselbe Datei erneut ausgewählt werden. Andere Formulareingaben
+bleiben erhalten. Die tatsächliche Dateiauswahl und die Liste werden gemeinsam
+aktualisiert, sodass entfernte Dateien nicht mitgesendet werden.
+
 Anhänge werden vor dem Upload im Browser gelesen und als Speicher-Kopie gesendet.
 Ist eine lokale Datei zwischenzeitlich verändert oder nicht mehr lesbar, fordert
 die Oberfläche zum erneuten Auswählen auf; die übrigen Eingaben bleiben erhalten.
