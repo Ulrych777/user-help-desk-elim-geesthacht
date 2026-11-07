@@ -12,9 +12,17 @@ Empfängeradressen und Entwürfe werden nur an angemeldete Administratoren gelie
 ## Anmeldung und dauerhafte Verwaltung
 
 Cloudflare Access schützt /admin, /admin/*, /api/admin und /api/admin/*.
-Freigegeben ist glenn.ritter@elimgeesthacht.de. Verwendet wird derselbe
-Anmeldeanbieter wie in der bestehenden Ehrenamtplattform. Das Serviceportal hat
-eine eigene Access-Anwendung mit eigener E-Mail-Freigabe.
+Verwendet wird derselbe Anmeldeanbieter wie in der bestehenden Ehrenamtplattform.
+Das Serviceportal hat eine eigene Access-Anwendung. Cloudflare bestätigt die
+E-Mail-Identität; die aktive Berechtigung kommt aus der Datenbank.
+Das erste Konto ist glenn.ritter@elimgeesthacht.de.
+
+Unter **Administratoren** lassen sich weitere Konten mit Name und E-Mail-Adresse
+anlegen, inaktiv setzen, wieder aktivieren und löschen. Das eigene Konto sowie
+der letzte aktive Administrator sind geschützt. Der Server prüft diese Regeln
+und die Datenbank verhindert zusätzlich das Entfernen des letzten aktiven
+Zugangs. Eine Inaktivierung sperrt auch bestehende Sitzungen beim nächsten
+geschützten Aufruf. Es werden keine Einladungsmails automatisch verschickt.
 
 Der Worker prüft zusätzlich kryptografisch die JWT-Signatur, Aussteller,
 Audience, Gültigkeitsdauer und freigegebene E-Mail-Adresse. Ein behaupteter
@@ -104,8 +112,12 @@ für die Custom Domain; alternative workers.dev-Zugänge der Vorschau sind deakt
 
 Cloudflare-Zugangsdaten ausschließlich als HTTP-Secret CLOUDFLARE_API_TOKEN für
 api.cloudflare.com hinterlegen. Access-Team und Audience sind keine Secrets.
-Weitere Administratoren müssen sowohl in der Access-Policy als auch in
-ADMIN_EMAILS der Wrangler-Umgebung freigegeben werden.
+Weitere Administratoren werden ausschließlich in der geschützten Verwaltung
+gepflegt; dafür ist kein Deployment und keine Änderung an Cloudflare-Listen nötig.
+Nach dem erstmaligen Deployment der D1-Rechteverwaltung stellt
+python3 scripts/configure-admin-authentication.py nur die Serviceportal-Policy
+auf Identitätsprüfung um. Der Worker entscheidet weiter anhand aktiver Konten
+in D1 über den Zugriff. Die statische ADMIN_EMAILS-Variable entfällt.
 
 Die separate Wrangler-Umgebung test unter
 https://elim-serviceportal-test.glenn-ritter5994.workers.dev bleibt für die alte

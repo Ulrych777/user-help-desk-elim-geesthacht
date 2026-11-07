@@ -915,6 +915,15 @@ figcaption {
   color: var(--muted);
   overflow-wrap: anywhere;
 }
+
+.administrator-identity {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.administrator-account .actions {
+  flex-shrink: 0;
+}
 .area-image-preview {
   max-width: 360px;
   margin-top: 22px;

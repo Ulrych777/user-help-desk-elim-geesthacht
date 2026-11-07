@@ -1,4 +1,5 @@
 import { adminIdentity, type AccessEnv } from "./access.js";
+import { handleAdministrators } from "./administrators.js";
 
 export interface PortalEnv extends AccessEnv {
   DB: D1Database;
@@ -182,12 +183,44 @@ export async function handlePortal(request: Request, env: PortalEnv): Promise<Re
     let email: string | null = null;
     if (isAdmin) {
       email = await adminIdentity(request, env);
-      if (!email) return json({ error: "Bitte mit einer freigegebenen Admin-Adresse anmelden." }, 401);
+      if (!email) {
+        if (path === "/admin" || path.startsWith("/admin/")) {
+          return new Response(
+            '<!doctype html><html lang="de"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
+            '<title>Kein Administratorzugang · Serviceportal</title>' +
+            '<body style="font-family:system-ui,sans-serif;background:#eee9e1;color:#0c2c46;padding:24px">' +
+            '<main style="max-width:600px;margin:12vh auto"><h1>Kein Administratorzugang</h1>' +
+            '<p>Für diese Anmeldung ist kein aktives Administratorkonto freigegeben.</p>' +
+            '<p>Bitte wende dich an einen aktiven Administrator, wenn du Zugang benötigst.</p>' +
+            '<p><a href="/cdn-cgi/access/logout">Abmelden und eine andere Adresse verwenden</a></p>' +
+            '<p><a href="/">Zur Startseite</a></p></main></body></html>',
+            { status: 401, headers: { "content-type": "text/html; charset=utf-8", "cache-control": "private, no-store",
+              "content-security-policy": "default-src 'none'; style-src 'unsafe-inline'; frame-ancestors 'none'",
+              "x-content-type-options": "nosniff" } },
+          );
+        }
+        return json({ error: "Bitte mit einer freigegebenen Admin-Adresse anmelden." }, 401);
+      }
     }
     if (["POST", "PUT", "PATCH", "DELETE"].includes(request.method) && isAdmin) {
       if (request.headers.get("origin") !== url.origin ||
           (request.headers.get("sec-fetch-site") && !["same-origin", "none"].includes(request.headers.get("sec-fetch-site")!)))
         return json({ error: "Diese Anfrage ist nicht erlaubt." }, 403);
+    }
+    const adminPrefix = "/api/admin/administrators";
+    if (path === adminPrefix || path.startsWith(adminPrefix + "/")) {
+      let input: unknown;
+      if (["POST", "PATCH", "DELETE"].includes(request.method)) {
+        if (!request.headers.get("content-type")?.startsWith("application/json"))
+          throw new PortalError(415, "JSON erwartet.");
+        try { input = JSON.parse(new TextDecoder().decode(await body(request, 4096))); }
+        catch (failure) {
+          if (failure instanceof PortalError) throw failure;
+          throw new PortalError(400, "Ungültiges JSON.");
+        }
+      }
+      return await handleAdministrators(request.method,
+        path === adminPrefix ? undefined : path.slice(adminPrefix.length + 1), input, env.DB, email!);
     }
     if (path === "/api/portal" && request.method === "GET") {
       const state = await load(env);

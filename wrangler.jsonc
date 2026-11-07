@@ -60,7 +60,6 @@
         "PORTAL_MODE": "persistent",
         "CF_ACCESS_TEAM_DOMAIN": "cold-cell-4312.cloudflareaccess.com",
         "CF_ACCESS_AUD": "09b952547e3db140088512bab69da9305ebb6c02c4b3de89fbda61e99bf33d2a",
-        "ADMIN_EMAILS": "glenn.ritter@elimgeesthacht.de",
         "MAIL_ENABLED": "true",
         "PUBLIC_HOSTNAME": "serviceportal.glennritter.de",
         "RESEND_FROM": "Serviceportal <anfrage@mail.ehrenamt.glennritter.de>",

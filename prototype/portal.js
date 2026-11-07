@@ -1046,6 +1046,11 @@ function adminShell(section, content) {
     content = content.replace("Bilder bleiben in dieser Vorschau nur bis zum Neuladen erhalten.", "Bilder werden dauerhaft gespeichert.");
   renderAdminShell(section, content);
   if (adminDocument) {
+    const adminLink = document.createElement("a");
+    adminLink.href = "#admin/administrators";
+    adminLink.textContent = "Administratoren";
+    if (section === "administrators") adminLink.className = "active";
+    app.querySelector(".admin-nav").append(adminLink);
     app.querySelector(".admin-note").innerHTML =
       'Angemeldet als <strong>' + esc(adminEmail) +
       '</strong>. Gespeicherte Änderungen bleiben erhalten. <a href="/cdn-cgi/access/logout">Abmelden</a>';
@@ -1112,6 +1117,114 @@ async function savePortalState(nextAreas, nextForms, editor) {
   } finally {
     buttons.forEach(button => { button.disabled = false; });
   }
+}
+
+function renderAdministrators() {
+  if (!adminDocument) {
+    adminShell("administrators", '<section class="panel"><h2>Administratoren</h2><p>Die Kontoverwaltung ist in der angemeldeten Online-Verwaltung verfügbar.</p></section>');
+    return;
+  }
+  adminShell("administrators",
+    '<div id="administrators-view"><div class="section-heading"><div><h2>Administratoren</h2>' +
+    '<p>Aktive Konten können sich mit ihrer E-Mail-Adresse anmelden und das Serviceportal verwalten.</p></div></div>' +
+    '<div id="administrator-error" class="error" role="alert"></div>' +
+    '<p id="administrator-status" role="status" aria-live="polite">Administratoren werden geladen …</p>' +
+    '<div id="administrator-list"></div>' +
+    '<form class="panel" id="new-administrator"><h3>Administrator anlegen</h3>' +
+    field("Name *", "administrator-name", '<input id="administrator-name" required maxlength="150" autocomplete="name">') +
+    field("E-Mail-Adresse *", "administrator-email", '<input id="administrator-email" type="email" required maxlength="254" autocomplete="email">') +
+    '<p class="small muted">Der Zugang erfolgt per E-Mail-Code. Eine Einladung wird nicht automatisch versendet.</p>' +
+    '<button class="btn" type="submit">Administrator anlegen</button></form></div>');
+  const view = $("administrators-view"), list = $("administrator-list"),
+    error = $("administrator-error"), status = $("administrator-status"),
+    createForm = $("new-administrator");
+  let accounts = [], busy = false;
+  const endpoint = "/api/admin/administrators";
+  const api = async (path, method = "GET", data) => {
+    const response = await fetch(path, {
+      method, cache: "no-store",
+      ...(data === undefined ? {} : { headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }),
+    });
+    if (!response.headers.get("content-type")?.includes("application/json"))
+      throw new Error("Die Anmeldung ist möglicherweise abgelaufen. Bitte erneut anmelden.");
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || "Die Änderung konnte nicht gespeichert werden.");
+    return result;
+  };
+  const draw = () => {
+    list.innerHTML = accounts.map(admin => {
+      const protectedAccount = admin.isSelf || admin.isLastActive;
+      const reason = admin.isSelf ? "Dein eigenes Konto ist geschützt." :
+        admin.isLastActive ? "Das letzte aktive Administratorkonto ist geschützt." : "";
+      return '<div class="manage-card administrator-account"><div class="administrator-identity">' +
+        '<span class="status ' + (admin.active ? "" : "off") + '">' + (admin.active ? "Aktiv" : "Inaktiv") + '</span>' +
+        '<h3>' + esc(admin.name) + (admin.isSelf ? ' <span class="small muted">(Du)</span>' : "") + '</h3>' +
+        '<p>' + esc(admin.email) + '</p>' +
+        (protectedAccount ? '<p class="small muted">' + reason + '</p>' : "") +
+        '</div><div class="actions">' +
+        '<button class="btn secondary" type="button" data-admin-action="toggle" data-email="' + esc(admin.email) + '"' +
+        ((admin.active ? !admin.canDeactivate : admin.isSelf) ? ' disabled title="' + esc(reason) + '"' : "") + '>' +
+        (admin.active ? "Inaktiv setzen" : "Aktivieren") + '</button>' +
+        '<button class="btn ghost" type="button" data-admin-action="delete" data-email="' + esc(admin.email) + '"' +
+        (!admin.canDelete ? ' disabled title="' + esc(reason) + '"' : "") + '>Löschen</button></div></div>';
+    }).join("");
+  };
+  const refresh = async () => {
+    const result = await api(endpoint);
+    if (!view.isConnected) return;
+    accounts = result.administrators;
+    draw();
+  };
+  const change = async (path, method, data, message, after) => {
+    if (busy) return;
+    busy = true;
+    error.textContent = "";
+    status.textContent = "Änderung wird gespeichert …";
+    view.querySelectorAll("button").forEach(button => { button.disabled = true; });
+    try {
+      await api(path, method, data);
+      if (!view.isConnected) return;
+      if (after) after();
+      await refresh();
+      if (view.isConnected) status.textContent = message;
+    } catch (failure) {
+      if (view.isConnected) {
+        error.textContent = failure.message;
+        status.textContent = "";
+      }
+    } finally {
+      busy = false;
+      if (view.isConnected) {
+        draw();
+        createForm.querySelector('button[type="submit"]').disabled = false;
+      }
+    }
+  };
+  createForm.addEventListener("submit", event => {
+    event.preventDefault();
+    change(endpoint, "POST", {
+      name: $("administrator-name").value.trim(), email: $("administrator-email").value.trim(),
+    }, "Administrator wurde angelegt.", () => createForm.reset());
+  });
+  list.addEventListener("click", event => {
+    const button = event.target.closest("[data-admin-action]");
+    if (!button || button.disabled || busy) return;
+    const admin = accounts.find(account => account.email === button.dataset.email);
+    if (!admin) return;
+    const path = endpoint + "/" + encodeURIComponent(admin.email);
+    if (button.dataset.adminAction === "delete") {
+      if (window.confirm("Administrator „" + admin.name + "“ (" + admin.email + ") wirklich löschen?"))
+        change(path, "DELETE", { version: admin.version }, "Administrator wurde gelöscht.");
+    } else {
+      change(path, "PATCH", { version: admin.version, active: !admin.active },
+        admin.active ? "Administrator wurde inaktiv gesetzt." : "Administrator wurde aktiviert.");
+    }
+  });
+  refresh().then(() => {
+    if (view.isConnected) status.textContent = "";
+  }).catch(failure => {
+    if (view.isConnected) { error.textContent = failure.message; status.textContent = ""; }
+  });
 }
 
 function renderAdminList(section) {
@@ -1539,7 +1652,8 @@ function renderPage(route, force = false) {
   if (parts[0] === "home" || !parts[0]) renderHome();
   else if (parts[0] === "area") renderArea(parts[1]);
   else if (parts[0] === "admin") {
-    if (parts[1] === "area") renderAreaEditor(parts[2]);
+    if (parts[1] === "administrators") renderAdministrators();
+    else if (parts[1] === "area") renderAreaEditor(parts[2]);
     else if (parts[1] === "form") renderFormEditor(parts[2]);
     else renderAdminList(parts[1] === "forms" ? "forms" : "areas");
   } else renderMissing();

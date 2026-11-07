@@ -1,7 +1,7 @@
 export interface AccessEnv {
+  DB: D1Database;
   CF_ACCESS_TEAM_DOMAIN?: string;
   CF_ACCESS_AUD?: string;
-  ADMIN_EMAILS?: string;
 }
 
 type AccessKey = JsonWebKey & { kid: string };
@@ -15,7 +15,7 @@ function decode(part: string): Uint8Array<ArrayBuffer> {
 export async function adminIdentity(request: Request, env: AccessEnv): Promise<string | null> {
   try {
     if (!env.CF_ACCESS_TEAM_DOMAIN?.match(/^[a-z0-9-]+\.cloudflareaccess\.com$/) ||
-        !env.CF_ACCESS_AUD || !env.ADMIN_EMAILS) return null;
+        !env.CF_ACCESS_AUD) return null;
     const token = request.headers.get("Cf-Access-Jwt-Assertion");
     if (!token || token.length > 16000) return null;
     const parts = token.split(".");
@@ -32,7 +32,6 @@ export async function adminIdentity(request: Request, env: AccessEnv): Promise<s
         (claims.nbf !== undefined && (!Number.isInteger(claims.nbf) || claims.nbf > now + 30)) ||
         typeof claims.email !== "string") return null;
     const email = claims.email.toLowerCase();
-    if (!env.ADMIN_EMAILS.split(",").map(e => e.trim().toLowerCase()).includes(email)) return null;
     if (!keyCache || keyCache.issuer !== issuer || keyCache.expires <= now) {
       const response = await fetch(issuer + "/cdn-cgi/access/certs", { signal: AbortSignal.timeout(10000) });
       if (!response.ok) return null;
@@ -46,7 +45,10 @@ export async function adminIdentity(request: Request, env: AccessEnv): Promise<s
       { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["verify"]);
     const valid = await crypto.subtle.verify("RSASSA-PKCS1-v1_5", key,
       decode(parts[2]), new TextEncoder().encode(parts[0] + "." + parts[1]));
-    return valid ? email : null;
+    if (!valid) return null;
+    const admin = await env.DB.prepare("SELECT email FROM admins WHERE lower(email) = ? AND active = 1")
+      .bind(email).first<{ email: string }>();
+    return admin ? email : null;
   } catch {
     return null;
   }

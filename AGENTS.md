@@ -28,8 +28,11 @@ nächste Änderung. Die vollständige, geschützte Verwaltung gehört ausdrückl
   INSERT OR IGNORE; bestehende Admin-Inhalte niemals durch Seeds überschreiben.
   Ein geänderter Seed allein aktualisiert keine bestehende Inhaltsdatenbank.
 - Admin-Seiten und Admin-API immer serverseitig mit Cloudflare Access UND
-  JWT-Prüfung schützen. Keine lokale Auth-Umgehung einbauen. Admin-Adressen müssen
-  Access-Policy und ADMIN_EMAILS erfüllen. Empfängeradressen, Entwürfe und
+  JWT-Prüfung schützen. Keine lokale Auth-Umgehung einbauen. Cloudflare prüft die
+  E-Mail-Identität; aktive Rechte kommen bei jedem Request aus der Tabelle admins.
+  Keine statische ADMIN_EMAILS-Freigabe ergänzen. Selbstschutz und mindestens ein
+  aktiver Administrator sind Pflicht, auch bei parallelen Requests. DB-Trigger
+  schützen den letzten aktiven Zugang zusätzlich. Empfängeradressen, Entwürfe und
   unveröffentlichte Bilder nicht öffentlich liefern.
 - Der echte E-Mail-Versand benötigt RESEND_API_KEY und TURNSTILE_SECRET_KEY als
   Worker-Secrets sowie die Versandvariablen in wrangler.jsonc. Fehlende

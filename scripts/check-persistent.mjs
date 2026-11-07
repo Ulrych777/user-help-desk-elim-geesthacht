@@ -25,6 +25,10 @@ try {
   const initial = JSON.parse(fs.readFileSync(path.join(root, "seeds/portal.json"), "utf8"));
   database = new DatabaseSync(path.join(temporary, "portal.sqlite"));
   database.exec(fs.readFileSync(path.join(root, "migrations/0002_portal_content.sql"), "utf8"));
+  database.exec(fs.readFileSync(path.join(root, "migrations/0004_administrators.sql"), "utf8"));
+  database.prepare("INSERT INTO admins (email,display_name,active) VALUES (?,?,1)")
+    .run("admin@example.test", "Test Admin");
+  database.prepare("DELETE FROM admins WHERE email=?").run("glenn.ritter@elimgeesthacht.de");
   database.prepare("INSERT INTO portal_content (id,version,data_json) VALUES ('main',1,?)").run(JSON.stringify(initial));
   const DB = {
     prepare(sql) {
@@ -32,6 +36,7 @@ try {
       const query = {
         bind(...args) { values.push(...args); return query; },
         async first() { return database.prepare(sql).get(...values) || null; },
+        async all() { return { success: true, results: database.prepare(sql).all(...values) }; },
         async run() {
           const result = database.prepare(sql).run(...values);
           return { success: true, meta: { changes: Number(result.changes) } };
@@ -57,7 +62,6 @@ try {
   const env = {
     DB, MEDIA, PORTAL_MODE: "persistent",
     CF_ACCESS_TEAM_DOMAIN: "test-portal.cloudflareaccess.com", CF_ACCESS_AUD: "test-audience",
-    ADMIN_EMAILS: "admin@example.test",
     ASSETS: { async fetch() { return new Response(fs.readFileSync(path.join(root, "public-preview/index.html")), { headers: { "content-type": "text/html" } }); } },
   };
   // Only tests supply a JWKS. Production code has no authentication bypass.
@@ -156,6 +160,50 @@ try {
   assert.equal((await request("/api/admin/portal", "PUT", fresh)).status, 200);
   assert.equal((await request(src, "GET", undefined, null)).status, 404);
   pass("authenticated media uploads, MIME/signature/size validation and visibility of published versus draft images.");
+
+  const adminEndpoint = "/api/admin/administrators";
+  const accountPath = email => adminEndpoint + "/" + encodeURIComponent(email);
+  const currentAdmin = async email => (await (await request(adminEndpoint)).json()).administrators.find(a => a.email === email);
+  assert.equal((await request(adminEndpoint, "GET", undefined, null)).status, 401);
+  assert.equal((await request(adminEndpoint, "POST", { name: "Blocked", email: "blocked@example.test" }, validToken, { origin: "https://attacker.example" })).status, 403);
+  const self = await currentAdmin("admin@example.test");
+  assert(self.isSelf && self.isLastActive && !self.canDelete && !self.canDeactivate);
+  for (const method of ["PATCH", "DELETE"])
+    assert.equal((await request(accountPath("ADMIN@EXAMPLE.TEST"), method, { version: self.version, ...(method === "PATCH" ? { active: false } : {}) })).status, 403);
+  assert.throws(() => database.prepare("UPDATE admins SET active=0 WHERE email=?").run("admin@example.test"), /last_active_admin/);
+  assert.throws(() => database.prepare("DELETE FROM admins WHERE email=?").run("admin@example.test"), /last_active_admin/);
+  assert.equal((await request(adminEndpoint, "POST", { name: "", email: "bad" })).status, 400);
+  assert.equal((await request(adminEndpoint, "POST", { name: "Second", email: "SECOND@EXAMPLE.TEST" })).status, 201);
+  assert.equal((await request(adminEndpoint, "POST", { name: "Duplicate", email: "second@example.test" })).status, 409);
+  const secondToken = await token({ email: "second@example.test" });
+  assert.equal((await request("/api/admin/portal", "GET", undefined, secondToken)).status, 200);
+  const secondSelf = (await (await request(adminEndpoint, "GET", undefined, secondToken)).json()).administrators.find(a => a.isSelf);
+  assert.equal(secondSelf.email, "second@example.test");
+  assert.equal((await request(accountPath("second@example.test"), "DELETE", { version: secondSelf.version }, secondToken)).status, 403);
+  assert.equal((await request(accountPath("second@example.test"), "PATCH", { version: 1, active: false })).status, 200);
+  for (const protectedPath of ["/admin/", "/api/admin/portal", adminEndpoint])
+    assert.equal((await request(protectedPath, "GET", undefined, secondToken)).status, 401);
+  assert.equal((await request(adminEndpoint, "POST", { name: "Escalate", email: "escalate@example.test" }, secondToken)).status, 401);
+  assert.equal((await request(accountPath("second@example.test"), "PATCH", { version: 1, active: true })).status, 409);
+  assert.equal((await request(accountPath("second@example.test"), "PATCH", { version: 2, active: true })).status, 200);
+  assert.equal((await request("/api/admin/portal", "GET", undefined, secondToken)).status, 200);
+  assert.equal((await request(accountPath("second@example.test"), "DELETE", { version: 3 })).status, 200);
+  assert.equal((await request("/api/admin/portal", "GET", undefined, secondToken)).status, 401);
+  assert.equal((await request(adminEndpoint, "POST", { name: "Inactive", email: "inactive@example.test" })).status, 201);
+  assert.equal((await request(accountPath("inactive@example.test"), "PATCH", { version: 1, active: false })).status, 200);
+  assert.equal((await request(accountPath("inactive@example.test"), "DELETE", { version: 2 })).status, 200);
+  assert.equal((await request(adminEndpoint, "POST", { name: "Racing", email: "racing@example.test" })).status, 201);
+  const racingToken = await token({ email: "racing@example.test" });
+  const race = await Promise.all([
+    request(accountPath("racing@example.test"), "PATCH", { version: 1, active: false }),
+    request(accountPath("admin@example.test"), "PATCH", { version: 1, active: false }, racingToken),
+  ]);
+  assert.equal(race.filter(r => r.status === 200).length, 1);
+  assert(race.some(r => [401,403,409].includes(r.status)));
+  assert.equal(database.prepare("SELECT COUNT(*) AS n FROM admins WHERE active=1").get().n, 1);
+  database.prepare("UPDATE admins SET active=1,version=1 WHERE email=?").run("admin@example.test");
+  database.prepare("DELETE FROM admins WHERE email=?").run("racing@example.test");
+  pass("administrator API: create, normalize, revoke existing sessions, reactivate, delete, duplicates, stale versions, self/last protection and concurrent revocation.");
 
   database.prepare("UPDATE portal_content SET version=1,data_json=? WHERE id='main'").run(JSON.stringify(initial));
   server = http.createServer(async (incoming, outgoing) => {
@@ -276,6 +324,50 @@ try {
   assert.equal(await page.locator("#area-name").inputValue(), "Nicht bei abgelaufener Anmeldung speichern");
   assert.deepEqual(errors, []);
   pass("guide-image persistence, stale browser tab and expired login preserve unsaved inputs; no browser errors.");
+  await context.setExtraHTTPHeaders({ "Cf-Access-Jwt-Assertion": validToken });
+  await page.goto(base + "/admin/#admin/areas");
+  await page.getByRole("link", { name: "Administratoren", exact: true }).click();
+  await page.getByRole("heading", { name: "Administratoren", exact: true }).waitFor();
+  const ownCard = page.locator(".administrator-account").filter({ hasText: "admin@example.test" });
+  await ownCard.waitFor();
+  assert(await ownCard.getByRole("button", { name: "Inaktiv setzen", exact: true }).isDisabled());
+  assert(await ownCard.getByRole("button", { name: "Löschen", exact: true }).isDisabled());
+  await page.locator("#administrator-name").fill("Neue Administratorin");
+  await page.locator("#administrator-email").fill("new.person@example.test");
+  await page.getByRole("button", { name: "Administrator anlegen", exact: true }).click();
+  await page.locator("#administrator-status").filter({ hasText: "wurde angelegt" }).waitFor();
+  await page.reload();
+  const newCard = page.locator(".administrator-account").filter({ hasText: "new.person@example.test" });
+  await newCard.waitFor();
+  const newPerson = await context.newPage();
+  await newPerson.setExtraHTTPHeaders({ "Cf-Access-Jwt-Assertion": await token({ email: "new.person@example.test" }) });
+  assert.equal((await newPerson.goto(base + "/admin/")).status(), 200);
+  await newPerson.getByRole("link", { name: "Administratoren", exact: true }).click();
+  await newPerson.getByText("Dein eigenes Konto ist geschützt.", { exact: true }).waitFor();
+  await newCard.getByRole("button", { name: "Inaktiv setzen", exact: true }).click();
+  await page.locator("#administrator-status").filter({ hasText: "inaktiv gesetzt" }).waitFor();
+  assert.equal((await newPerson.reload()).status(), 401);
+  await newCard.getByRole("button", { name: "Aktivieren", exact: true }).click();
+  await page.locator("#administrator-status").filter({ hasText: "wurde aktiviert" }).waitFor();
+  assert.equal((await newPerson.goto(base + "/admin/")).status(), 200);
+  await page.locator("#administrator-name").fill("Doppelt");
+  await page.locator("#administrator-email").fill("NEW.PERSON@EXAMPLE.TEST");
+  await page.getByRole("button", { name: "Administrator anlegen", exact: true }).click();
+  await page.locator("#administrator-error").filter({ hasText: "bereits" }).waitFor();
+  assert.equal(await page.locator("#administrator-name").inputValue(), "Doppelt");
+  await newCard.getByRole("button", { name: "Inaktiv setzen", exact: true }).click();
+  await page.locator("#administrator-status").filter({ hasText: "inaktiv gesetzt" }).waitFor();
+  page.once("dialog", dialog => dialog.accept());
+  await newCard.getByRole("button", { name: "Löschen", exact: true }).click();
+  await page.locator("#administrator-status").filter({ hasText: "wurde gelöscht" }).waitFor();
+  assert.equal(await newCard.count(), 0);
+  assert.equal((await newPerson.goto(base + "/admin/")).status(), 401);
+  for (const width of [768,390,320]) {
+    await page.setViewportSize({ width, height: 900 });
+    assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+  }
+  assert.deepEqual(errors, []);
+  pass("administrator browser UI: navigation, own-account locks, create/reload, active login, immediate revocation, reactivation, duplicate error, confirmed deletion and mobile widths.");
   console.log(JSON.stringify({ passed }));
 } finally {
   globalThis.fetch = realFetch;
