@@ -95,6 +95,88 @@ select option {
   background: #fdfaf4;
   color: #081426;
 }
+
+/* Native, keyboard-accessible pickers with the same surface as the portal. */
+@supports (appearance: base-select) {
+  select,
+  select::picker(select) {
+    appearance: base-select;
+  }
+  select {
+    align-items: center;
+    gap: 12px;
+    padding-right: 16px;
+    background-image: none;
+  }
+  select::picker-icon {
+    content: "";
+    flex: none;
+    width: 8px;
+    height: 8px;
+    margin: 0 4px 4px auto;
+    border-right: 2px solid var(--control-focus);
+    border-bottom: 2px solid var(--control-focus);
+    rotate: 45deg;
+  }
+  select:open::picker-icon {
+    rotate: 225deg;
+    translate: 0 4px;
+  }
+  select:open {
+    border-color: var(--control-focus);
+    box-shadow: 0 0 0 3px var(--control-halo);
+  }
+  select::picker(select) {
+    inset: auto;
+    top: anchor(bottom);
+    left: anchor(left);
+    width: anchor-size(width);
+    position-try-fallbacks: flip-block;
+    margin-block: 6px;
+    padding: 6px;
+    max-height: min(320px, 50dvh);
+    overflow-y: auto;
+    border: 1px solid var(--line-warm, #d9cebe);
+    border-radius: var(--radius-control, 12px);
+    background: var(--control-bg);
+    color: var(--ink, #081426);
+    box-shadow: 0 12px 28px #102d4529;
+    font-family: inherit;
+    font-size: var(--text-body, 1rem);
+    line-height: 1.5;
+  }
+  select option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 44px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: transparent;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+  select option:checked {
+    background: #e7edf3;
+    color: var(--deep, #102d45);
+    font-weight: 600;
+  }
+  select option:hover,
+  select option:focus-visible {
+    outline: none;
+    background: var(--deep, #102d45);
+    color: white;
+  }
+  select option::checkmark {
+    order: 1;
+    margin-left: auto;
+    color: currentColor;
+  }
+  select option:disabled {
+    color: var(--muted, #626967);
+    opacity: 0.65;
+  }
+}
 input[type="date"]::-webkit-calendar-picker-indicator {
   opacity: 0.75;
   cursor: pointer;

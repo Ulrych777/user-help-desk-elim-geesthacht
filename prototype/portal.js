@@ -1264,19 +1264,7 @@ function renderAreaEditor(id) {
     imagePending = false;
   adminShell(
     "areas",
-    `<form class="panel" id="area-editor"><h2>${existing ? "Bereich bearbeiten" : "Neuer Bereich"}</h2>${field("Bereichsname *", "area-name", input("area-name", area.name, true))}${field("Kurzbeschreibung *", "area-description", input("area-description", area.description, true))}${field("Empfängeradresse *", "area-email", input("area-email", area.email, true, "email"), "Anfragen aus Formularen und Anleitungen dieses Bereichs gehen an diese Adresse.")}${field(
-      "Symbol",
-      "area-icon",
-      `<select id="area-icon">${options(
-        [
-          { id: "it", name: "Technik" },
-          { id: "house", name: "Gebäude" },
-          { id: "finance", name: "Finanzen" },
-        ],
-        area.icon,
-      )}</select>`,
-      "Das Symbol unterstützt die Orientierung. Das zugehörige Bild verwaltest du darunter.",
-    )}<fieldset><legend>Bereichsbild</legend><p class="small muted">Dieses Bild gehört nur zu diesem Bereich. Du kannst es als Stilvorlage herunterladen oder durch ein neues transparentes Motiv ersetzen.</p>${field(existing && draftImage ? "Bild ersetzen" : "Bereichsbild hinzufügen", "area-image-file", '<input id="area-image-file" type="file" accept="image/png,image/webp">', "Transparentes PNG oder WebP, maximal 5 MB. Das Bild wird automatisch auf 1536 × 1024 Pixel vereinheitlicht.")}<p id="area-image-file-name" class="small muted"></p><div class="error" id="area-image-error" role="alert"></div><div id="area-image-preview" class="area-image-preview" hidden></div><button class="btn ghost" id="remove-area-image" type="button" hidden>Bild entfernen</button><p class="help">Die Vorschau zeigt den einheitlichen Bildbereich der Startseite. Dasselbe Motiv erscheint auch auf der Bereichsseite.</p></fieldset><fieldset><legend>Kategorien</legend><p class="small muted">Kategorien helfen beim Finden. Sie haben keine eigene Empfängeradresse.</p><div id="category-editor">${area.categories.map(categoryRow).join("")}</div><button class="btn secondary" id="add-category" type="button">${icon("plus")} Kategorie ergänzen</button></fieldset><label class="check"><input id="area-published" type="checkbox" ${area.published ? "checked" : ""}>Bereich veröffentlichen</label><div class="actions"><button class="btn" type="submit">In Vorschau speichern</button><a href="#admin/areas">Abbrechen</a></div></form>`,
+    `<form class="panel" id="area-editor"><h2>${existing ? "Bereich bearbeiten" : "Neuer Bereich"}</h2>${field("Bereichsname *", "area-name", input("area-name", area.name, true))}${field("Kurzbeschreibung *", "area-description", input("area-description", area.description, true))}${field("Empfängeradresse *", "area-email", input("area-email", area.email, true, "email"), "Anfragen aus Formularen und Anleitungen dieses Bereichs gehen an diese Adresse.")}<fieldset><legend>Bereichsbild</legend><p class="small muted">Dieses Bild gehört nur zu diesem Bereich. Du kannst es als Stilvorlage herunterladen oder durch ein neues transparentes Motiv ersetzen.</p>${field(existing && draftImage ? "Bild ersetzen" : "Bereichsbild hinzufügen", "area-image-file", '<input id="area-image-file" type="file" accept="image/png,image/webp">', "Transparentes PNG oder WebP, maximal 5 MB. Das Bild wird automatisch auf 1536 × 1024 Pixel vereinheitlicht.")}<p id="area-image-file-name" class="small muted"></p><div class="error" id="area-image-error" role="alert"></div><div id="area-image-preview" class="area-image-preview" hidden></div><button class="btn ghost" id="remove-area-image" type="button" hidden>Bild entfernen</button><p class="help">Die Vorschau zeigt den einheitlichen Bildbereich der Startseite. Dasselbe Motiv erscheint auch auf der Bereichsseite.</p></fieldset><fieldset><legend>Kategorien</legend><p class="small muted">Kategorien helfen beim Finden. Sie haben keine eigene Empfängeradresse.</p><div id="category-editor">${area.categories.map(categoryRow).join("")}</div><button class="btn secondary" id="add-category" type="button">${icon("plus")} Kategorie ergänzen</button></fieldset><label class="check"><input id="area-published" type="checkbox" ${area.published ? "checked" : ""}>Bereich veröffentlichen</label><div class="actions"><button class="btn" type="submit">In Vorschau speichern</button><a href="#admin/areas">Abbrechen</a></div></form>`,
   );
   const editor = $("area-editor"),
     fileInput = $("area-image-file"),
@@ -1378,7 +1366,7 @@ function renderAreaEditor(id) {
       name: $("area-name").value.trim(),
       description: $("area-description").value.trim(),
       email: $("area-email").value.trim(),
-      icon: $("area-icon").value,
+      icon: area.icon,
       image: draftImage ? { ...draftImage } : null,
       published: $("area-published").checked,
       categories,

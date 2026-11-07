@@ -170,7 +170,10 @@ const fs = require("node:fs"),
       "Original-Logo, Startseite, Suchtreffer, echter Direktlink und Kopierbestätigung; Dialogfokus und Erhalt desselben Formularentwurfs.",
     );
     await visit("area/it");
-    await page.locator("#area-category").selectOption("hilfe");
+    await page.locator("#area-category").click();
+    assert(await page.locator("#area-category").evaluate(select => select.matches(":open")));
+    await page.getByRole("option", { name: "Hilfe & Störungen", exact: true }).click();
+    assert.equal(await page.locator("#area-category").inputValue(), "hilfe");
     await page.locator("#area-search").fill("Flugmodus");
     assert.equal(await page.locator(".request-card").count(), 1);
     await page.locator(".request-card").click();
@@ -211,7 +214,15 @@ const fs = require("node:fs"),
     await page.locator("#request-name").fill("Beispielperson");
     await page.locator("#request-email").fill("person@example.org");
     await page.locator("#custom-ort").fill("Saal");
-    await page.locator("#custom-art").selectOption("Sonstiges");
+    await page.locator("#custom-art").focus();
+    await page.keyboard.press("Space");
+    await page.keyboard.press("Escape");
+    assert.equal(await page.locator("dialog[open]").count(), 1);
+    assert.equal(await page.locator("#custom-art").inputValue(), "");
+    await page.keyboard.press("Space");
+    await page.keyboard.press("End");
+    await page.keyboard.press("Enter");
+    assert.equal(await page.locator("#custom-art").inputValue(), "Sonstiges");
     await page.locator("#request-description").fill("Ein Beispielschaden.");
     const pdf = {
       name: "beleg.pdf",
@@ -330,7 +341,7 @@ const fs = require("node:fs"),
     const preset = await page
       .locator("#area-image-preview img")
       .getAttribute("src");
-    await page.locator("#area-icon").selectOption("finance");
+    assert.equal(await page.locator("#area-icon").count(), 0);
     assert.equal(
       await page.locator("#area-image-preview img").getAttribute("src"),
       preset,

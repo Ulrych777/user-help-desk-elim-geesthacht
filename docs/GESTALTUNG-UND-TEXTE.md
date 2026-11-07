@@ -1,5 +1,7 @@
 # Gestaltung des Elim Kirche Serviceportals
 
+Im Bereichseditor wird das Motiv ausschließlich unter „Bereichsbild“ hochgeladen, ersetzt, entfernt und in der Vorschau kontrolliert. Die unabhängige Symbolauswahl entfällt. Bestehende Bilder bleiben erhalten und werden weiterhin für Startseitenkachel und Bereichsbanner verwendet.
+
 Am 7. November 2026 wurden Typografie und Formulargestaltung vereinheitlicht: Eine gemeinsame Systemschrift gilt für Navigation, Inhalte, Eingaben und Schaltflächen. Zentrale CSS-Variablen legen 14 px für Beschriftungen und Hilfetexte, 16 px für Fließtext und Eingaben, 20 px für Abschnittstitel, 24 px für Kartentitel und 28–36 px für Seitentitel fest. Die große Einstiegsfrage auf der Startseite behält ihre hervorgehobene Größe. Abstände und Rundungen folgen gemeinsamen Vorgaben; die Schriftgrößen skalieren mit der Browser-Grundeinstellung.
 
 Die Kontaktkachel nutzt zwei gleich große Textabsätze ohne wiederholten Antwort-Hinweis. Der Anmeldestatus in der Verwaltung erscheint als helle Karte mit dunkelblauem Text, Kontoadresse und Abmelde-Schaltfläche. Gelbe Warnfarben bleiben damit aus dem normalen Anmeldestatus entfernt. Startseite, Bereiche, Formulare, Anleitungen und Verwaltung verwenden dieselben Textrollen.

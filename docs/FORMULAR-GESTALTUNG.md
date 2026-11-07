@@ -2,6 +2,8 @@
 
 Vorbereitet am 5. November 2026 für das Elim Kirche Serviceportal.
 
+Ergänzung vom 7. November 2026: Die veröffentlichte Webseite gestaltet auch die geöffneten Auswahllisten über `appearance: base-select` und `::picker(select)`. Cremefarbene Flächen, gemeinsame Rundungen, dunkelblaue Auswahlzustände und ein Häkchen kennzeichnen die Auswahl. Lange Einträge umbrechen innerhalb der Feldbreite; die Liste kann scrollen und bei Platzmangel oberhalb des Feldes öffnen. Browser ohne diese CSS-Unterstützung behalten die native Auswahl mit gestalteter Feldoberfläche. Es werden keine eigenen JavaScript-Comboboxen eingeführt. Mausauswahl sowie Tastaturauswahl und Escape innerhalb des Formulardialogs sind durch den Browsertest abgedeckt.
+
 Zu Beginn der Wiederherstellung enthielten die neu gestartete Cloud-Umgebung und der abgerufene GitHub-Stand ausschließlich die ursprüngliche README. Die damalige `prototype/index.html`, Bilder und Projektdokumente waren nicht verfügbar. Inzwischen wurde ein neuer Prototyp aus dem Gesprächsverlauf rekonstruiert; siehe [Wiederherstellung](WIEDERHERSTELLUNG.md).
 
 Die separate [Designvorschau](../prototype/formular-design-vorschau.html) enthält die neue Gestaltung für Textfelder, Dropdowns, Checkboxen und Suchfelder. Die gemeinsame [CSS-Datei](../prototype/form-controls.css) ist auch in den [rekonstruierten Prototyp](../prototype/index.html) integriert. `scripts/build-prototype.cjs` bettet sie nach den übrigen Portalstyles in die eigenständige HTML-Datei ein.

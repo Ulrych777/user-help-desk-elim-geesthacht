@@ -1414,6 +1414,88 @@ select option {
   background: #fdfaf4;
   color: #081426;
 }
+
+/* Native, keyboard-accessible pickers with the same surface as the portal. */
+@supports (appearance: base-select) {
+  select,
+  select::picker(select) {
+    appearance: base-select;
+  }
+  select {
+    align-items: center;
+    gap: 12px;
+    padding-right: 16px;
+    background-image: none;
+  }
+  select::picker-icon {
+    content: "";
+    flex: none;
+    width: 8px;
+    height: 8px;
+    margin: 0 4px 4px auto;
+    border-right: 2px solid var(--control-focus);
+    border-bottom: 2px solid var(--control-focus);
+    rotate: 45deg;
+  }
+  select:open::picker-icon {
+    rotate: 225deg;
+    translate: 0 4px;
+  }
+  select:open {
+    border-color: var(--control-focus);
+    box-shadow: 0 0 0 3px var(--control-halo);
+  }
+  select::picker(select) {
+    inset: auto;
+    top: anchor(bottom);
+    left: anchor(left);
+    width: anchor-size(width);
+    position-try-fallbacks: flip-block;
+    margin-block: 6px;
+    padding: 6px;
+    max-height: min(320px, 50dvh);
+    overflow-y: auto;
+    border: 1px solid var(--line-warm, #d9cebe);
+    border-radius: var(--radius-control, 12px);
+    background: var(--control-bg);
+    color: var(--ink, #081426);
+    box-shadow: 0 12px 28px #102d4529;
+    font-family: inherit;
+    font-size: var(--text-body, 1rem);
+    line-height: 1.5;
+  }
+  select option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 44px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: transparent;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+  select option:checked {
+    background: #e7edf3;
+    color: var(--deep, #102d45);
+    font-weight: 600;
+  }
+  select option:hover,
+  select option:focus-visible {
+    outline: none;
+    background: var(--deep, #102d45);
+    color: white;
+  }
+  select option::checkmark {
+    order: 1;
+    margin-left: auto;
+    color: currentColor;
+  }
+  select option:disabled {
+    color: var(--muted, #626967);
+    opacity: 0.65;
+  }
+}
 input[type="date"]::-webkit-calendar-picker-indicator {
   opacity: 0.75;
   cursor: pointer;
@@ -2878,19 +2960,7 @@ function renderAreaEditor(id) {
     imagePending = false;
   adminShell(
     "areas",
-    `<form class="panel" id="area-editor"><h2>${existing ? "Bereich bearbeiten" : "Neuer Bereich"}</h2>${field("Bereichsname *", "area-name", input("area-name", area.name, true))}${field("Kurzbeschreibung *", "area-description", input("area-description", area.description, true))}${field("Empfängeradresse *", "area-email", input("area-email", area.email, true, "email"), "Anfragen aus Formularen und Anleitungen dieses Bereichs gehen an diese Adresse.")}${field(
-      "Symbol",
-      "area-icon",
-      `<select id="area-icon">${options(
-        [
-          { id: "it", name: "Technik" },
-          { id: "house", name: "Gebäude" },
-          { id: "finance", name: "Finanzen" },
-        ],
-        area.icon,
-      )}</select>`,
-      "Das Symbol unterstützt die Orientierung. Das zugehörige Bild verwaltest du darunter.",
-    )}<fieldset><legend>Bereichsbild</legend><p class="small muted">Dieses Bild gehört nur zu diesem Bereich. Du kannst es als Stilvorlage herunterladen oder durch ein neues transparentes Motiv ersetzen.</p>${field(existing && draftImage ? "Bild ersetzen" : "Bereichsbild hinzufügen", "area-image-file", '<input id="area-image-file" type="file" accept="image/png,image/webp">', "Transparentes PNG oder WebP, maximal 5 MB. Das Bild wird automatisch auf 1536 × 1024 Pixel vereinheitlicht.")}<p id="area-image-file-name" class="small muted"></p><div class="error" id="area-image-error" role="alert"></div><div id="area-image-preview" class="area-image-preview" hidden></div><button class="btn ghost" id="remove-area-image" type="button" hidden>Bild entfernen</button><p class="help">Die Vorschau zeigt den einheitlichen Bildbereich der Startseite. Dasselbe Motiv erscheint auch auf der Bereichsseite.</p></fieldset><fieldset><legend>Kategorien</legend><p class="small muted">Kategorien helfen beim Finden. Sie haben keine eigene Empfängeradresse.</p><div id="category-editor">${area.categories.map(categoryRow).join("")}</div><button class="btn secondary" id="add-category" type="button">${icon("plus")} Kategorie ergänzen</button></fieldset><label class="check"><input id="area-published" type="checkbox" ${area.published ? "checked" : ""}>Bereich veröffentlichen</label><div class="actions"><button class="btn" type="submit">In Vorschau speichern</button><a href="#admin/areas">Abbrechen</a></div></form>`,
+    `<form class="panel" id="area-editor"><h2>${existing ? "Bereich bearbeiten" : "Neuer Bereich"}</h2>${field("Bereichsname *", "area-name", input("area-name", area.name, true))}${field("Kurzbeschreibung *", "area-description", input("area-description", area.description, true))}${field("Empfängeradresse *", "area-email", input("area-email", area.email, true, "email"), "Anfragen aus Formularen und Anleitungen dieses Bereichs gehen an diese Adresse.")}<fieldset><legend>Bereichsbild</legend><p class="small muted">Dieses Bild gehört nur zu diesem Bereich. Du kannst es als Stilvorlage herunterladen oder durch ein neues transparentes Motiv ersetzen.</p>${field(existing && draftImage ? "Bild ersetzen" : "Bereichsbild hinzufügen", "area-image-file", '<input id="area-image-file" type="file" accept="image/png,image/webp">', "Transparentes PNG oder WebP, maximal 5 MB. Das Bild wird automatisch auf 1536 × 1024 Pixel vereinheitlicht.")}<p id="area-image-file-name" class="small muted"></p><div class="error" id="area-image-error" role="alert"></div><div id="area-image-preview" class="area-image-preview" hidden></div><button class="btn ghost" id="remove-area-image" type="button" hidden>Bild entfernen</button><p class="help">Die Vorschau zeigt den einheitlichen Bildbereich der Startseite. Dasselbe Motiv erscheint auch auf der Bereichsseite.</p></fieldset><fieldset><legend>Kategorien</legend><p class="small muted">Kategorien helfen beim Finden. Sie haben keine eigene Empfängeradresse.</p><div id="category-editor">${area.categories.map(categoryRow).join("")}</div><button class="btn secondary" id="add-category" type="button">${icon("plus")} Kategorie ergänzen</button></fieldset><label class="check"><input id="area-published" type="checkbox" ${area.published ? "checked" : ""}>Bereich veröffentlichen</label><div class="actions"><button class="btn" type="submit">In Vorschau speichern</button><a href="#admin/areas">Abbrechen</a></div></form>`,
   );
   const editor = $("area-editor"),
     fileInput = $("area-image-file"),
@@ -2992,7 +3062,7 @@ function renderAreaEditor(id) {
       name: $("area-name").value.trim(),
       description: $("area-description").value.trim(),
       email: $("area-email").value.trim(),
-      icon: $("area-icon").value,
+      icon: area.icon,
       image: draftImage ? { ...draftImage } : null,
       published: $("area-published").checked,
       categories,
