@@ -293,7 +293,9 @@ main[data-view="home"] {
   /* Meet the viewport edge so the full-height backdrop cannot form a second cap. */
   top: 0;
   align-self: start;
-  height: clamp(440px, calc(100dvh - 170px), 1000px);
+  /* While pinned, cover the viewport down to its bottom edge. A shorter card
+     exposes the full-height blue backdrop below the illustration. */
+  height: 100dvh;
   color: white;
   background: var(--bg);
   min-width: 0;
@@ -1123,7 +1125,7 @@ main[data-view="home"] ~ footer {
 }
 @media (min-width: 1100px) and (min-height: 850px) {
   .home-search-panel {
-    height: clamp(930px, calc(100dvh - 170px), 1100px);
+    height: max(930px, 100dvh);
   }
 }
 @media (max-width: 1099px) {

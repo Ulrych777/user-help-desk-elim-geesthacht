@@ -608,6 +608,22 @@ const fs = require("node:fs"),
     await page.evaluate(() => scrollTo(0, 650));
     let second = await page.locator("#portal-search").boundingBox();
     assert(Math.abs(first.y - second.y) < 1);
+    for (const viewport of [
+      { width: 1280, height: 720 },
+      { width: 1854, height: 951 },
+      { width: 1440, height: 1000 },
+      { width: 1920, height: 1200 },
+    ]) {
+      await page.setViewportSize(viewport);
+      await page.evaluate(() => scrollTo(0, 350));
+      await page.waitForFunction(() => Math.abs(document.querySelector('.home-search-panel').getBoundingClientRect().top) < 1);
+      assert(await page.locator('.home-service-art').evaluate(art => art.getBoundingClientRect().bottom >= innerHeight - 1),
+        `${viewport.width}×${viewport.height}: Unter dem mitlaufenden Bild darf kein blauer Hintergrundstreifen sichtbar werden.`);
+      await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+      assert(await page.locator('.home-service-art').evaluate(art => Math.abs(art.getBoundingClientRect().bottom - document.querySelector('footer').getBoundingClientRect().top) < 1),
+        'Das Bild muss beim Erreichen des Footers ohne Zwischenstreifen abschließen.');
+    }
+    await page.setViewportSize({ width: 1440, height: 1000 });
     await page.evaluate(() =>
       scrollTo(0, document.documentElement.scrollHeight),
     );

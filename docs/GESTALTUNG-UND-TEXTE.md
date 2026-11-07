@@ -12,6 +12,8 @@ Stand 5. November 2026. Die Startseite orientiert sich wieder an der erneut bere
 
 Links stehen auf dunkelblauem Hintergrund die große Frage, ein kurzer Einstiegstext und das Suchfeld. Darunter erscheint die rechteckige offene Tür mit warmem Innenlicht, Pflanze, Briefsymbol und Werkzeug. Die linke Suchfläche bleibt beim Scrollen auf breiten und ausreichend hohen Bildschirmen erreichbar und endet vor dem Footer.
 
+Die mitlaufende Suchfläche ist mindestens so hoch wie das Browserfenster. Dadurch bleibt unter dem Bild beim Scrollen kein dunkelblauer Hintergrundstreifen sichtbar. Auf großen Bildschirmen bleibt die bisherige Mindesthöhe von 930 px erhalten; die Höhe ist nach oben nicht mehr begrenzt. Sobald der Footer erreicht wird, schließt das Bild bündig mit ihm ab. Die statische Darstellung auf schmalen oder sehr flachen Bildschirmen bleibt bestehen.
+
 Rechts stehen „Unsere Bereiche“ und die warmen, leicht gewölbten Kacheln. Die Bilder zeigen einen Monitor mit leerem Bildschirm, ein schlichtes Haus und einen Rechner mit Dokument. Ihre transparenten Hintergründe fügen sich in die Kartenfläche ein. Eine weich unscharfe Pflanze liegt rechts unten als angeschnittene Dekoration hinter den Kacheln. Sie erhält den Raum bis zum Footer und erscheint auf schmalen Bildschirmen nicht.
 
 Auf dem Desktop stehen zwei Bereichskacheln nebeneinander, auf dem Smartphone untereinander. Das Suchfeld bleibt auf schmalen oder sehr flachen Bildschirmen im normalen Seitenfluss. Weitere Bereiche lassen die Übersicht nach unten wachsen.
