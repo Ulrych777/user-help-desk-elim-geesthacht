@@ -15,8 +15,8 @@ Aktive URL: https://serviceportal.glennritter.de, Verwaltung unter `/admin/`.
 - Einheitliche Schrift-/Feldgestaltung, weiche Kartenränder, orange/blaue Tags,
   illustrierte Leer- und Erfolgszustände, angepasster Kalender und reduzierte
   Bewegung auf Wunsch des Betriebssystems.
-- Footer ohne Testbetriebszeile; der Adminzugang ist eine orange Schaltfläche mit
-  weichen Innenkanten. Der serverseitige Testempfänger bleibt unverändert aktiv.
+- Footer ohne Testbetriebszeile; der Adminzugang ist eine cremefarbene Schaltfläche mit
+  weichen Innenkanten und einem kleinen orangefarbenen Symbolakzent. Der serverseitige Testempfänger bleibt unverändert aktiv.
 
 ## Dokumentation und Bereinigung
 

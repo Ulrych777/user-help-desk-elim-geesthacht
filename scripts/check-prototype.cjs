@@ -436,6 +436,8 @@ const fs = require("node:fs"),
     });
     await page.waitForFunction(
       () =>
+        document.querySelector("#download-area-image")?.getAttribute("download") ===
+          "test-transparent-1536x1024.png" &&
         document.querySelector("#area-image-preview img")?.naturalWidth ===
           1536 &&
         document.querySelector("#area-image-preview img")?.naturalHeight ===
