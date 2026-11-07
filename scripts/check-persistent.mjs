@@ -127,6 +127,16 @@ try {
   const invalid = structuredClone(update);
   invalid.forms[0].categories = ["not-in-this-area"];
   assert.equal((await request("/api/admin/portal", "PUT", invalid)).status, 400);
+  for (const guideDocument of [
+    { type: "doc", content: [{ type: "script", text: "alert(1)" }] },
+    { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Link", marks: [{ type: "link", attrs: { href: "javascript:alert(1)" } }] }] }] },
+    { type: "doc", content: [{ type: "guideImage", attrs: { imageId: "unknown-image" } }] },
+    { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "x".repeat(20001) }] }] },
+  ]) {
+    const unsafe = structuredClone(update);
+    unsafe.forms.find(f => f.type === "guide").guideDocument = guideDocument;
+    assert.equal((await request("/api/admin/portal", "PUT", unsafe)).status, 400);
+  }
   invalid.forms[0].categories = update.forms[0].categories;
   invalid.areas[0].image = { type: "stored", src: "javascript:alert(1)", name: "invalid" };
   assert.equal((await request("/api/admin/portal", "PUT", invalid)).status, 400);
@@ -317,9 +327,36 @@ try {
   pass("persisted form edit and normalized image upload, public delivery and protected admin download.");
 
   await page.goto(base + "/admin/#admin/form/wlan-anleitung");
+  await page.locator("#guide-text").focus();
+  await page.keyboard.press("Control+Home");
+  await page.keyboard.press("Enter");
+  await page.keyboard.press("ArrowUp");
+  await page.locator('[data-guide-command="h2"]').click();
+  await page.keyboard.insertText("Vorbereitung");
+  await page.keyboard.press("Control+End");
+  await page.keyboard.press("Enter");
+  await page.locator('[data-guide-command="bulletList"]').click();
+  await page.keyboard.insertText("Schritt prüfen");
+  await page.keyboard.press("Enter");
+  await page.keyboard.insertText("Verbindung testen");
+  await page.keyboard.press("Enter");
+  await page.keyboard.press("Enter");
+  await page.keyboard.insertText("Cloudflare-Hilfe");
+  await page.keyboard.press("Home");
+  await page.keyboard.press("Shift+End");
+  await page.locator('[data-guide-command="link"]').click();
+  await page.locator("#guide-link-url").fill("javascript:alert(1)");
+  await page.locator("#guide-link-apply").click();
+  assert((await page.locator("#guide-link-error").textContent()).includes("gültigen Link"));
+  await page.locator("#guide-link-url").fill("https://developers.cloudflare.com/");
+  await page.locator("#guide-link-apply").click();
+  await page.locator("#guide-text > p").first().click();
+  await page.keyboard.press("End");
+  const beforeImage = await page.locator("#guide-text > p").first().textContent();
   await page.locator("#guide-image-files").setInputFiles({ name: "guide.png", mimeType: "image/png", buffer: Buffer.from(buffer, "base64") });
   const addedImage = page.locator(".guide-image-editor").nth(1);
   await addedImage.locator('[data-image-property="alt"]').fill("Dauerhaftes Anleitungsbild");
+  await addedImage.locator('[data-image-property="caption"]').fill("Hier geht es weiter.");
   await page.getByRole("button", { name: "Speichern", exact: true }).click();
   await page.waitForURL("**/#admin/forms");
   await publicPage.goto(base + "/#form/wlan-anleitung");
@@ -328,6 +365,15 @@ try {
   await guideImage.waitFor();
   assert((await guideImage.getAttribute("src")).startsWith("/media/"));
   assert(await guideImage.evaluate(img => img.decode().then(() => img.naturalWidth > 0)));
+  assert.equal(await publicPage.locator(".guide-article h2").textContent(), "Vorbereitung");
+  assert.deepEqual(await publicPage.locator(".guide-article li").allTextContents(), ["Schritt prüfen", "Verbindung testen"]);
+  assert.equal(await publicPage.getByRole("link", { name: "Cloudflare-Hilfe", exact: true }).getAttribute("href"), "https://developers.cloudflare.com/");
+  assert.equal(await guideImage.evaluate(img => img.closest("figure").previousElementSibling.textContent), beforeImage);
+  assert.equal(await guideImage.evaluate(img => img.closest("figure").querySelector("figcaption").textContent), "Hier geht es weiter.");
+  await page.goto(base + "/admin/#admin/form/wlan-anleitung");
+  await page.reload();
+  assert.equal(await page.locator("#guide-text h2").textContent(), "Vorbereitung");
+  assert.equal(await page.locator("#guide-text .guide-editor-image").count(), 2);
   await page.goto(base + "/admin/#admin/area/it");
   const second = await context.newPage();
   await second.goto(base + "/admin/#admin/area/it");

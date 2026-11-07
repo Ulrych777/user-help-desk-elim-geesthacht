@@ -633,6 +633,10 @@ function guideContent(form) {
     );
   const imageMarkup = (image) =>
     `<figure><img src="${esc(guideImageSource(image.src))}" alt="${esc(image.alt)}">${image.caption ? `<figcaption>${esc(image.caption)}</figcaption>` : ""}</figure>`;
+  if (form.guideDocument) return window.GuideEditor.renderDocument(form.guideDocument, id => {
+    const image = pictures.find(image => image.id === id);
+    return image ? imageMarkup(image) : "";
+  });
   return paragraphs
     .map(
       (paragraph, index) =>
@@ -1398,8 +1402,13 @@ const fieldTypes = [
 function fieldRow(item) {
   return `<div class="field-row" data-field-row="${esc(item.id)}"><div class="form-grid"><label class="field"><span>Feldbeschriftung *</span><input data-property="label" value="${esc(item.label)}" required maxlength="150"></label><label class="field"><span>Feldtyp</span><select data-property="type">${options(fieldTypes, item.type)}</select></label></div><label class="field"><span>Auswahlwerte (bei Auswahlfeldern)</span><input data-property="options" value="${esc(item.options.join(", "))}" maxlength="1000" placeholder="Zum Beispiel: Büro, Saal, Außenbereich"><span class="help">Mehrere Werte durch Kommas trennen.</span></label><label class="check"><input data-property="required" type="checkbox" ${item.required ? "checked" : ""}>Pflichtfeld</label><button class="btn ghost" data-remove-field type="button">Feld entfernen</button></div>`;
 }
+let currentGuideEditor = null;
 function guideImageRow(image) {
-  return `<div class="field-row guide-image-editor" data-guide-image="${esc(image.id)}"><img src="${esc(guideImageSource(image.src))}" alt="Vorschau des Anleitungsbildes"><label class="field"><span>Bildbeschreibung für die Barrierefreiheit *</span><input data-image-property="alt" value="${esc(image.alt)}" required maxlength="300"></label><label class="field"><span>Bildunterschrift (optional)</span><input data-image-property="caption" value="${esc(image.caption)}" maxlength="300"></label><label class="field"><span>Nach welchem Absatz anzeigen?</span><input data-image-property="position" type="number" min="1" step="1" value="${Math.max(1, Number(image.afterParagraph) || 1)}"><span class="help">Bei weniger Absätzen steht das Bild am Ende.</span></label><button class="btn ghost" data-remove-image type="button">Bild entfernen</button></div>`;
+  return `<div class="field-row guide-image-editor" data-guide-image="${esc(image.id)}"><img src="${esc(guideImageSource(image.src))}" alt="Vorschau des Anleitungsbildes"><label class="field"><span>Bildbeschreibung für die Barrierefreiheit *</span><input data-image-property="alt" value="${esc(image.alt)}" required maxlength="300"></label><label class="field"><span>Bildunterschrift (optional)</span><input data-image-property="caption" value="${esc(image.caption)}" maxlength="300"></label><div class="actions"><button class="btn secondary" data-insert-image type="button">An Textposition einfügen</button><button class="btn ghost" data-remove-image type="button">Bild löschen</button></div></div>`;
+}
+function guideEditorMarkup() {
+  const commands = [["bold", "Fett"], ["italic", "Kursiv"], ["underline", "Unterstrichen"], ["h2", "Überschrift"], ["h3", "Zwischenüberschrift"], ["bulletList", "Aufzählung"], ["orderedList", "Nummerierte Liste"], ["blockquote", "Zitat"], ["link", "Link"], ["clear", "Formatierung entfernen"], ["undo", "Rückgängig"], ["redo", "Wiederholen"]];
+  return `<div class="field"><span id="guide-editor-label">Anleitungstext *</span><p id="guide-editor-help" class="help">Schreibe und formatiere deine Anleitung. Setze den Cursor an die gewünschte Stelle, bevor du ein Bild hochlädst oder einfügst. Bilder lassen sich im Text nach oben und unten verschieben.</p><div class="guide-editor-shell"><div id="guide-toolbar" class="guide-toolbar" role="group" aria-label="Text formatieren">${commands.map(([command, label]) => `<button class="btn secondary" type="button" data-guide-command="${command}" aria-label="${label}" title="${label}">${esc(label)}</button>`).join("")}<button class="btn secondary" type="button" id="guide-upload">Bild hochladen</button></div><div id="guide-editor"></div></div><div id="guide-link-editor" class="guide-link-editor" hidden><label class="field"><span>Link-Adresse</span><input id="guide-link-url" type="text" inputmode="url" placeholder="https://…" maxlength="2000"></label><div class="actions"><button class="btn secondary" id="guide-link-apply" type="button">Link übernehmen</button><button class="btn ghost" id="guide-link-remove" type="button">Link entfernen</button><button class="btn ghost" id="guide-link-cancel" type="button">Abbrechen</button></div><p id="guide-link-error" role="alert" class="small"></p></div><p id="guide-text-count" class="help" aria-live="polite"></p></div>`;
 }
 function renderFormEditor(id) {
   const existing = forms.find((form) => form.id === id);
@@ -1419,6 +1428,7 @@ function renderFormEditor(id) {
   };
   let guideImages = (draft.guideImages || []).map((image) => ({ ...image })),
     imagePending = false;
+  const imageArchive = new Map(guideImages.map(image => [image.id, image]));
   adminShell(
     "forms",
     `<form class="panel" id="form-editor"><h2>${existing ? "Anliegen bearbeiten" : "Neues Anliegen"}</h2>${field("Titel *", "form-title", input("form-title", draft.title, true))}${field("Kurzbeschreibung *", "form-description", input("form-description", draft.description, true))}${field(
@@ -1431,9 +1441,40 @@ function renderFormEditor(id) {
         ],
         isGuide(draft) ? "guide" : "form",
       )}</select>`,
-    )}${field("Bereich *", "form-area", `<select id="form-area" required>${options(areas, draft.area)}</select>`)}<fieldset><legend>Kategorien</legend><div id="form-categories"></div></fieldset>${field("Suchbegriffe", "form-keywords", input("form-keywords", draft.keywords), "Zum Beispiel: WLAN, Internet, Verbindung")}<fieldset id="form-settings"><legend>Formular</legend><p class="small muted">Name, E-Mail-Adresse, Betreff und Nachricht sind immer enthalten.</p><div id="field-editor">${draft.fields.map(fieldRow).join("")}</div><button class="btn secondary" id="add-field" type="button">${icon("plus")} Feld hinzufügen</button><label class="check"><input id="form-upload" type="checkbox" ${draft.upload ? "checked" : ""}>Dateiupload anbieten (3 Dateien, zusammen maximal 10 MB)</label></fieldset><fieldset id="guide-settings"><legend>Anleitung</legend>${field("Anleitungstext *", "guide-text", `<textarea id="guide-text" required maxlength="20000" rows="10">${esc(draft.guideText)}</textarea>`, "Absätze durch Leerzeilen trennen. HTML wird als Text dargestellt.")}<p class="small muted">Bis zu fünf Bilder mit je maximal 5 MB. JPG, PNG oder WebP. Bilder bleiben in dieser Vorschau nur bis zum Neuladen erhalten.</p><label class="field"><span>Bilder hinzufügen</span><input id="guide-image-files" type="file" multiple accept="image/jpeg,image/png,image/webp"></label><div class="error" id="guide-image-error" role="alert"></div><div id="guide-images"></div><p class="small muted">Am Ende steht immer ein Kontaktformular mit eigener E-Mail-Adresse, Betreff und Nachricht.</p></fieldset><label class="check"><input id="form-published" type="checkbox" ${draft.published ? "checked" : ""}>Anliegen veröffentlichen</label><div class="error" id="editor-error" role="alert"></div><div class="actions"><button class="btn" type="submit">In Vorschau speichern</button><button class="btn secondary" type="submit" data-preview="true">Speichern und ansehen</button><a href="#admin/forms">Abbrechen</a></div></form>`,
+    )}${field("Bereich *", "form-area", `<select id="form-area" required>${options(areas, draft.area)}</select>`)}<fieldset><legend>Kategorien</legend><div id="form-categories"></div></fieldset>${field("Suchbegriffe", "form-keywords", input("form-keywords", draft.keywords), "Zum Beispiel: WLAN, Internet, Verbindung")}<fieldset id="form-settings"><legend>Formular</legend><p class="small muted">Name, E-Mail-Adresse, Betreff und Nachricht sind immer enthalten.</p><div id="field-editor">${draft.fields.map(fieldRow).join("")}</div><button class="btn secondary" id="add-field" type="button">${icon("plus")} Feld hinzufügen</button><label class="check"><input id="form-upload" type="checkbox" ${draft.upload ? "checked" : ""}>Dateiupload anbieten (3 Dateien, zusammen maximal 10 MB)</label></fieldset><fieldset id="guide-settings"><legend>Anleitung</legend>${guideEditorMarkup()}<p class="small muted">Bis zu fünf Bilder mit je maximal 5 MB. JPG, PNG oder WebP. Bilder bleiben in dieser Vorschau nur bis zum Neuladen erhalten.</p><label class="field"><span>Bilder hinzufügen</span><input id="guide-image-files" type="file" multiple accept="image/jpeg,image/png,image/webp"></label><div class="error" id="guide-image-error" role="alert"></div><div id="guide-images"></div><p class="small muted">Am Ende steht immer ein Kontaktformular mit eigener E-Mail-Adresse, Betreff und Nachricht.</p></fieldset><label class="check"><input id="form-published" type="checkbox" ${draft.published ? "checked" : ""}>Anliegen veröffentlichen</label><div class="error" id="editor-error" role="alert"></div><div class="actions"><button class="btn" type="submit">In Vorschau speichern</button><button class="btn secondary" type="submit" data-preview="true">Speichern und ansehen</button><a href="#admin/forms">Abbrechen</a></div></form>`,
   );
   const editor = $("form-editor");
+  const richGuide = window.GuideEditor.create({
+    element: $("guide-editor"), toolbar: $("guide-toolbar"),
+    content: draft.guideDocument || window.GuideEditor.legacyDocument(draft.guideText, guideImages),
+    images: () => guideImages, source: guideImageSource,
+    onChange: () => {
+      $("guide-text-count").textContent = `${richGuide.text().length} / 20.000 Zeichen`;
+      let restored = false;
+      richGuide.editor.state.doc.descendants(node => {
+        if (node.type.name === "guideImage" && !guideImages.some(image => image.id === node.attrs.imageId) && imageArchive.has(node.attrs.imageId)) {
+          guideImages.push({ ...imageArchive.get(node.attrs.imageId) }); restored = true;
+        }
+      });
+      if (restored) { renderImages(); richGuide.refreshImages(); }
+    },
+    openLink: href => { $("guide-link-editor").hidden = false; $("guide-link-url").value = href; $("guide-link-url").focus(); }
+  });
+  currentGuideEditor = richGuide;
+  $("guide-upload").onmousedown = event => event.preventDefault();
+  $("guide-upload").onclick = () => $("guide-image-files").click();
+  $("guide-text-count").textContent = `${richGuide.text().length} / 20.000 Zeichen`;
+  const closeLink = () => { $("guide-link-editor").hidden = true; $("guide-link-error").textContent = ""; richGuide.editor.commands.focus(); };
+  $("guide-link-apply").onclick = () => {
+    if (richGuide.setLink($("guide-link-url").value.trim())) closeLink();
+    else $("guide-link-error").textContent = "Bitte einen gültigen Link mit https://, http:// oder mailto: eintragen.";
+  };
+  $("guide-link-remove").onclick = () => { richGuide.setLink(""); closeLink(); };
+  $("guide-link-cancel").onclick = closeLink;
+  $("guide-link-url").onkeydown = event => {
+    if (event.key === "Enter") { event.preventDefault(); $("guide-link-apply").click(); }
+    if (event.key === "Escape") { event.preventDefault(); closeLink(); }
+  };
   const updateType = () => {
     const guide = $("form-type").value === "guide";
     $("form-settings").hidden = $("form-settings").disabled = guide;
@@ -1482,15 +1523,10 @@ function renderFormEditor(id) {
         caption: row
           .querySelector("[data-image-property=caption]")
           .value.trim(),
-        afterParagraph: Math.max(
-          1,
-          Math.floor(
-            Number(row.querySelector("[data-image-property=position]").value) ||
-              1,
-          ),
-        ),
+        afterParagraph: 1,
       }),
     );
+    guideImages.forEach(image => imageArchive.set(image.id, { ...image }));
   };
   const renderImages = () => {
     $("guide-images").innerHTML = guideImages.map(guideImageRow).join("");
@@ -1498,6 +1534,7 @@ function renderFormEditor(id) {
       (button) =>
         (button.onclick = () => {
           collectImages();
+          richGuide.removeImage(button.closest("[data-guide-image]").dataset.guideImage);
           guideImages = guideImages.filter(
             (image) =>
               image.id !==
@@ -1507,6 +1544,11 @@ function renderFormEditor(id) {
         }),
     );
   };
+  $("guide-images").addEventListener("input", () => { collectImages(); richGuide.refreshImages(); });
+  $("guide-images").addEventListener("click", event => {
+    const button = event.target.closest("[data-insert-image]");
+    if (button) { collectImages(); richGuide.insertImage(button.closest("[data-guide-image]").dataset.guideImage); }
+  });
   renderImages();
   $("guide-image-files").addEventListener("change", async (event) => {
     const fileInput = event.target,
@@ -1544,14 +1586,13 @@ function renderFormEditor(id) {
           src: await readImageData(file),
           alt: "",
           caption: "",
-          afterParagraph: Math.max(
-            1,
-            guideParagraphs($("guide-text").value).length,
-          ),
+          afterParagraph: 1,
         })),
       );
       if (!editor.isConnected) return;
       guideImages.push(...added);
+      added.forEach(image => imageArchive.set(image.id, { ...image }));
+      added.forEach(image => richGuide.insertImage(image.id));
       renderImages();
     } catch {
       if (editor.isConnected)
@@ -1596,6 +1637,10 @@ function renderFormEditor(id) {
       return;
     }
     collectImages();
+    if ($("form-type").value === "guide" && (!richGuide.text() || richGuide.text().length > 20000)) {
+      $("editor-error").textContent = "Bitte einen Anleitungstext mit höchstens 20.000 Zeichen eintragen.";
+      richGuide.editor.commands.focus(); return;
+    }
     const values = {
       id: existing?.id || newId("anliegen"),
       title: $("form-title").value.trim(),
@@ -1609,7 +1654,8 @@ function renderFormEditor(id) {
       upload: $("form-upload").checked,
       published: $("form-published").checked,
       fields,
-      guideText: $("guide-text").value.trim(),
+      guideText: richGuide.text(),
+      guideDocument: richGuide.document(),
       guideImages: guideImages.map((image) => ({ ...image })),
     };
     const nextForms = forms.map(form => form.id === values.id ? values : form);
@@ -1633,6 +1679,8 @@ function renderMissing() {
 }
 function renderPage(route, force = false) {
   if (pageRoute === route && !force) return;
+  currentGuideEditor?.destroy();
+  currentGuideEditor = null;
   pageRoute = route;
   const parts = route.slice(1).split("/");
   if (parts[0] === "home" || !parts[0]) renderHome();

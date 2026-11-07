@@ -33,7 +33,12 @@ const replacements = {
     path.join(prototype, "form-controls.css"),
     "utf8",
   ),
-  PORTAL_JS: fs.readFileSync(path.join(prototype, "portal.js"), "utf8"),
+  PORTAL_JS: require("esbuild").buildSync({
+    entryPoints: [path.join(prototype, "guide-editor.js")], bundle: true,
+    write: false, format: "iife", target: "es2022", minify: true,
+    supported: { "template-literal": false },
+    legalComments: "inline",
+  }).outputFiles[0].text.replace(/<\/script/gi, "<\\/script") + "\n" + fs.readFileSync(path.join(prototype, "portal.js"), "utf8"),
   IMAGES: JSON.stringify(images),
 };
 const template = fs.readFileSync(

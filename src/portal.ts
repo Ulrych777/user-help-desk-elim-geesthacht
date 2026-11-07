@@ -1,5 +1,6 @@
 import { adminIdentity, type AccessEnv } from "./access.js";
 import { handleAdministrators } from "./administrators.js";
+import { validateGuideDocument, type GuideNode } from "./guide-document.js";
 
 export interface PortalEnv extends AccessEnv {
   DB: D1Database;
@@ -20,7 +21,7 @@ type Image = { type: "library"; id: string } | { type: "stored"; src: string; na
 type Area = { id: string; name: string; description: string; email: string; icon: string; image: Image; published: boolean; categories: Category[] };
 type Field = { id: string; label: string; type: string; required: boolean; options: string[] };
 type GuideImage = { id: string; src: string; alt: string; caption: string; afterParagraph: number };
-type Concern = { id: string; area: string; title: string; description: string; type: string; keywords: string; categories: string[]; upload: boolean; published: boolean; fields: Field[]; guideText: string; guideImages: GuideImage[] };
+type Concern = { id: string; area: string; title: string; description: string; type: string; keywords: string; categories: string[]; upload: boolean; published: boolean; fields: Field[]; guideText: string; guideImages: GuideImage[]; guideDocument?: GuideNode };
 export type PortalState = { areas: Area[]; forms: Concern[] };
 export class PortalError extends Error {
   constructor(public status: number, message: string) { super(message); }
@@ -94,11 +95,17 @@ export function validatePortal(v: unknown): PortalState {
       return { id: id(img.id), src, alt: text(img.alt, 300), caption: text(img.caption, 300, false), afterParagraph: Number(img.afterParagraph) };
     });
     unique(guideImages.map(i => i.id));
+    let guideDocument: GuideNode | undefined;
+    if (f.guideDocument !== undefined && f.guideDocument !== null) {
+      try { guideDocument = validateGuideDocument(f.guideDocument, guideImages.map(i => i.id)); }
+      catch { fail("Der Anleitungstext enthält ungültige oder zu viele Inhalte."); }
+    }
     return {
       id: id(f.id), area: area!.id, type: String(f.type), title: text(f.title, 300),
       description: text(f.description, 2000), keywords: text(f.keywords, 2000, false),
       categories, upload: bool(f.upload), published: bool(f.published), fields,
       guideText: text(f.guideText, 20000, false), guideImages,
+      ...(guideDocument ? { guideDocument } : {}),
     };
   });
   unique(forms.map(f => f.id));

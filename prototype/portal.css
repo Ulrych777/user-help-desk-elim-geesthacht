@@ -1308,3 +1308,79 @@ main[data-view="home"] ~ footer {
     transition: none !important;
   }
 }
+
+/* Guide editor and published articles share the same content typography. */
+.guide-editor-shell {
+  border: 1px solid var(--control-border, #897e6e);
+  border-radius: var(--radius-control);
+  background: var(--control-bg, #fdfaf4);
+  overflow: hidden;
+}
+.guide-editor-shell:focus-within {
+  border-color: var(--deep);
+  box-shadow: 0 0 0 3px #1b4d7021;
+}
+.guide-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 12px;
+  border-bottom: 1px solid var(--line-warm);
+  background: #f3eee5;
+}
+.guide-toolbar .btn {
+  min-height: 38px;
+  padding: 6px 10px;
+  font-size: var(--text-small);
+  box-shadow: none;
+}
+.guide-toolbar .btn[aria-pressed="true"] {
+  background: var(--deep);
+  border-color: var(--deep);
+  color: white;
+}
+#guide-text {
+  min-height: 320px;
+  padding: 24px;
+  outline: none;
+  overflow-wrap: anywhere;
+}
+#guide-text p,
+.guide-article p { margin-bottom: 16px; }
+#guide-text h2,
+.guide-article h2 { font-size: var(--text-card); margin: 28px 0 12px; }
+#guide-text h3,
+.guide-article h3 { font-size: var(--text-section); margin: 24px 0 12px; }
+#guide-text > :first-child,
+.guide-article > :first-child { margin-top: 0; }
+#guide-text blockquote,
+.guide-article blockquote {
+  border-left: 3px solid #91a5b5;
+  margin: 20px 0;
+  padding: 8px 20px;
+  background: #e7edf366;
+}
+#guide-text ul, #guide-text ol,
+.guide-article ul, .guide-article ol { padding-left: 28px; margin: 16px 0; }
+#guide-text li, .guide-article li { margin-bottom: 8px; }
+#guide-text li p, .guide-article li p { margin-bottom: 8px; }
+#guide-text hr, .guide-article hr { border: 0; border-top: 1px solid var(--line-warm); margin: 24px 0; }
+.guide-editor-image {
+  margin: 20px 0;
+  padding: 12px;
+  border: 1px solid var(--line-warm);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+}
+.guide-editor-image img { display: block; max-height: 360px; max-width: 100%; margin: auto; }
+.guide-editor-image.ProseMirror-selectednode { outline: 2px solid var(--deep); outline-offset: 2px; }
+.guide-image-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.guide-image-actions .btn { padding: 6px 10px; min-height: 40px; font-size: var(--text-small); }
+.guide-link-editor { padding: 16px; background: #e7edf3; border-radius: var(--radius-control); margin-top: 12px; }
+.guide-link-editor .field { margin-bottom: 12px; }
+@media (max-width: 620px) {
+  #guide-text { padding: 16px; }
+  .guide-toolbar { padding: 8px; }
+  #guide-settings { padding: 0; border: 0; background: transparent; }
+  #guide-settings > legend { padding: 0; margin-bottom: 16px; }
+}

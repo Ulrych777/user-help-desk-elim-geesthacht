@@ -441,11 +441,14 @@ const fs = require("node:fs"),
       .fill("Eine neue Beispielanleitung.");
     await page.locator("#form-type").selectOption("guide");
     assert(await page.locator("#form-settings").evaluate((el) => el.disabled));
-    await page
-      .locator("#guide-text")
-      .fill(
-        "Erster Absatz.\n\nZweiter Absatz.\n\n<script>window.injected=true</script>",
-      );
+    await page.locator('[data-guide-command="h2"]').click();
+    await page.locator("#guide-text").pressSequentially("Erster Schritt.");
+    await page.keyboard.press("Enter");
+    await page.locator('[data-guide-command="bold"]').click();
+    await page.keyboard.insertText("Zweiter Absatz.");
+    await page.locator('[data-guide-command="bold"]').click();
+    await page.keyboard.press("Enter");
+    await page.keyboard.insertText("<script>window.injected=true</script>");
     await page
       .locator("#guide-image-files")
       .setInputFiles({
@@ -475,11 +478,14 @@ const fs = require("node:fs"),
     await page
       .locator("[data-image-property=caption]")
       .fill("Bild zur Orientierung.");
-    await page.locator("[data-image-property=position]").fill("2");
+    await page.locator('.guide-editor-image').getByRole("button", { name: "Bild nach oben", exact: true }).click();
     await page.getByRole("button", { name: "Speichern und ansehen" }).click();
     await page.getByRole("dialog", { name: "Selbsthilfe im Saal" }).waitFor();
     const guideId = new URL(page.url()).hash.split("/").at(-1);
-    assert.equal(await page.locator(".guide-article p").count(), 3);
+    assert.equal(await page.locator(".guide-article h2").textContent(), "Erster Schritt.");
+    assert.equal(await page.locator(".guide-article strong").textContent(), "Zweiter Absatz.");
+    assert.equal(await page.locator(".guide-article figure").evaluate(figure => figure.previousElementSibling.textContent), "Zweiter Absatz.");
+    assert.equal(await page.locator(".guide-article figure").evaluate(figure => figure.nextElementSibling.textContent), "<script>window.injected=true</script>");
     assert.equal(await page.evaluate(() => window.injected), undefined);
     assert(
       (await page.locator(".guide-article").innerText()).includes("<script>"),
@@ -512,6 +518,23 @@ const fs = require("node:fs"),
     await visit("admin/form/" + guideId);
     await page.locator("#form-type").selectOption("guide");
     assert.equal(await page.locator("[data-guide-image]").count(), 1);
+    await page.locator("[data-remove-image]").click();
+    assert.equal(await page.locator("#guide-text .guide-editor-image").count(), 0);
+    await page.locator('[data-guide-command="undo"]').click();
+    assert.equal(await page.locator("[data-guide-image]").count(), 1);
+    assert.equal(await page.locator("#guide-text .guide-editor-image").count(), 1);
+    await page.locator("#guide-text").focus();
+    await page.keyboard.press("Control+End");
+    await page.locator("#guide-text").evaluate(element => {
+      const data = new DataTransfer();
+      data.setData("text/html", '<p style="font-size:80px"><strong>Eingefügter Text</strong><a href="javascript:alert(1)">Unsicherer Link</a><img src="https://external.invalid/pixel.png" onerror="window.injected=true"><script>window.injected=true</script></p>');
+      element.dispatchEvent(new ClipboardEvent("paste", { clipboardData: data, bubbles: true, cancelable: true }));
+    });
+    assert.equal(await page.locator('#guide-text a[href^="javascript:"]').count(), 0);
+    assert.equal(await page.locator('#guide-text img[src^="https://external.invalid"]').count(), 0);
+    assert.equal(await page.locator('#guide-text [style*="80px"]').count(), 0);
+    assert((await page.locator("#guide-text").textContent()).includes("Eingefügter Text"));
+    assert.equal(await page.evaluate(() => window.injected), undefined);
     await page.locator("#form-published").uncheck();
     await save();
     await page.waitForURL("**/#admin/forms");
@@ -521,7 +544,7 @@ const fs = require("node:fs"),
       .waitFor();
     assert(await page.locator("#copy-request-link").isDisabled());
     pass(
-      "Anleitungspflege mit Bildbeschreibung und Absatzposition, HTML als Text, Wechsel der Anliegenart, Pflicht-Mehrfachauswahl und unveröffentlichte Inhalte.",
+      "Formatierte Anleitungen, Bilder im Textfluss mit Verschieben und Rückgängig, sicheres Einfügen, Wechsel der Anliegenart und unveröffentlichte Inhalte.",
     );
     await page.goto(base + "/#home");
     await page.reload();
