@@ -751,6 +751,29 @@ legend {
 .field-row .field {
   margin-bottom: 12px;
 }
+.field-row-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.field-row-header [data-field-position] {
+  font-size: var(--text-small);
+  font-weight: 600;
+}
+.field-order-actions { display: flex; gap: 4px; margin-left: auto; }
+.field-row-header .btn {
+  width: 40px;
+  min-height: 40px;
+  padding: 8px;
+  box-shadow: none;
+}
+.field-drag-handle { cursor: grab; touch-action: none; }
+.field-drag-handle:active { cursor: grabbing; }
+.field-sort-chosen { border-color: #1b4d70; }
+.field-sort-ghost { opacity: .45; background: #e7edf3; outline: 2px dashed #1b4d70; outline-offset: -2px; }
+.field-sort-drag { box-shadow: var(--surface-shadow); }
 .form-grid > .field {
   margin-bottom: 0;
 }

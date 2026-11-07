@@ -1,3 +1,4 @@
+import './field-sorter.js';
 import { Editor, Node } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import { safeGuideLink, renderGuideDocument } from '../src/guide-document.ts';

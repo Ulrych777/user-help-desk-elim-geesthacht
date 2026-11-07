@@ -287,12 +287,53 @@ try {
 
   await page.goto(base + "/admin/#admin/form/microsoft365");
   await page.locator("#form-title").fill("Microsoft dauerhaft");
+  await page.locator("#field-editor").evaluate(fields => window.scrollTo(0, fields.getBoundingClientRect().top + scrollY - 30));
+  await page.locator('[data-field-row="start"] [data-field-drag]').dragTo(
+    page.locator('[data-field-row="team"]'), { targetPosition: { x: 30, y: 10 } }
+  );
+  await page.waitForFunction(() => document.querySelector('#field-editor > [data-field-row]')?.dataset.fieldRow === 'start');
+  await page.locator("#add-field").click();
+  const customField = page.locator("#field-editor > [data-field-row]").last();
+  const customId = await customField.getAttribute("data-field-row");
+  await customField.locator('[data-property="label"]').fill("Standort");
+  await customField.locator('[data-property="type"]').selectOption("select");
+  await customField.locator('[data-property="options"]').fill("Büro, Saal");
+  await customField.locator('[data-property="required"]').check();
+  const customRow = page.locator(`[data-field-row="${customId}"]`);
+  await customRow.locator('[data-field-move="-1"]').click();
+  await customRow.locator('[data-field-drag]').focus();
+  await page.keyboard.press("ArrowUp");
+  assert.equal(await page.locator('#field-editor > [data-field-row]').first().getAttribute('data-field-row'), customId);
+  await page.keyboard.press("ArrowDown");
+  assert.deepEqual(await page.locator('#field-editor > [data-field-row]').evaluateAll(rows => rows.map(row => row.dataset.fieldRow)), ['start', customId, 'team']);
+  assert(await page.locator('#field-editor > [data-field-row]').first().locator('[data-field-move="-1"]').isDisabled());
+  assert(await page.locator('#field-editor > [data-field-row]').last().locator('[data-field-move="1"]').isDisabled());
+  assert.equal(await customRow.locator('[data-property="options"]').inputValue(), 'Büro, Saal');
+  assert(await customRow.locator('[data-property="required"]').isChecked());
   await page.getByRole("button", { name: "Speichern", exact: true }).click();
   await page.waitForURL("**/#admin/forms");
+  await page.goto(base + "/admin/#admin/form/microsoft365");
+  await page.reload();
+  await page.locator('#field-editor > [data-field-row]').first().waitFor();
+  assert.deepEqual(await page.locator('#field-editor > [data-field-row]').evaluateAll(rows => rows.map(row => row.dataset.fieldRow)), ['start', customId, 'team']);
+  assert.equal(await page.locator(`[data-field-row="${customId}"] [data-property="type"]`).inputValue(), 'select');
   await publicPage.goto(base + "/#form/microsoft365");
   await publicPage.reload();
   await publicPage.locator("#request-form").waitFor();
   assert.equal(await publicPage.locator("#request-title").textContent(), "Microsoft dauerhaft");
+  assert.deepEqual(await publicPage.locator('#request-form [id^="custom-"]').evaluateAll(fields => fields.map(field => field.id)), ['custom-start', 'custom-' + customId, 'custom-team']);
+  assert.deepEqual(await publicPage.locator('#custom-' + customId + ' option').allTextContents(), ['Bitte auswählen', 'Büro', 'Saal']);
+  const touch = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, extraHTTPHeaders: { "Cf-Access-Jwt-Assertion": validToken } });
+  const touchPage = await touch.newPage();
+  await touchPage.goto(base + "/admin/#admin/form/microsoft365");
+  await touchPage.locator('[data-field-row="start"] [data-field-move="1"]').tap();
+  assert.equal(await touchPage.locator('#field-editor > [data-field-row]').first().getAttribute('data-field-row'), customId);
+  await touchPage.locator('[data-field-row="start"] [data-field-move="-1"]').tap();
+  for (const width of [390, 320]) {
+    await touchPage.setViewportSize({ width, height: 844 });
+    assert(await touchPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+  }
+  await touch.close();
   const contactAppearance = await publicPage.locator(".aside").evaluate(aside => ({
     paragraphs: [...aside.querySelectorAll("p")].map(p => ({
       size: getComputedStyle(p).fontSize,

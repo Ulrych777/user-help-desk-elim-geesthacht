@@ -23,6 +23,8 @@ const esc = (value) =>
 const symbols = {
   search: '<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/>',
   arrow: '<path d="M5 12h14m-6-6 6 6-6 6"/>',
+  "arrow-up": '<path d="M12 19V5m-6 6 6-6 6 6"/>',
+  "arrow-down": '<path d="M12 5v14m-6-6 6 6 6-6"/>',
   check: '<path d="m5 12 4 4L19 6"/>',
   copy: '<rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/>',
   download: '<path d="M12 3v12m-5-5 5 5 5-5M5 21h14"/>',
@@ -1400,9 +1402,10 @@ const fieldTypes = [
   { id: "date", name: "Datum" },
 ];
 function fieldRow(item) {
-  return `<div class="field-row" data-field-row="${esc(item.id)}"><div class="form-grid"><label class="field"><span>Feldbeschriftung *</span><input data-property="label" value="${esc(item.label)}" required maxlength="150"></label><label class="field"><span>Feldtyp</span><select data-property="type">${options(fieldTypes, item.type)}</select></label></div><label class="field"><span>Auswahlwerte (bei Auswahlfeldern)</span><input data-property="options" value="${esc(item.options.join(", "))}" maxlength="1000" placeholder="Zum Beispiel: Büro, Saal, Außenbereich"><span class="help">Mehrere Werte durch Kommas trennen.</span></label><label class="check"><input data-property="required" type="checkbox" ${item.required ? "checked" : ""}>Pflichtfeld</label><button class="btn ghost" data-remove-field type="button">Feld entfernen</button></div>`;
+  return `<div class="field-row" data-field-row="${esc(item.id)}"><div class="field-row-header"><button class="btn secondary field-drag-handle" type="button" data-field-drag aria-label="Feld verschieben" aria-describedby="field-order-help" title="Ziehen zum Sortieren · Pfeiltasten zum Verschieben"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="5" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg></button><span data-field-position>Feld</span><div class="field-order-actions"><button class="btn secondary" type="button" data-field-move="-1" aria-label="Feld nach oben" title="Feld nach oben">${icon("arrow-up")}</button><button class="btn secondary" type="button" data-field-move="1" aria-label="Feld nach unten" title="Feld nach unten">${icon("arrow-down")}</button></div></div><div class="form-grid"><label class="field"><span>Feldbeschriftung *</span><input data-property="label" value="${esc(item.label)}" required maxlength="150"></label><label class="field"><span>Feldtyp</span><select data-property="type">${options(fieldTypes, item.type)}</select></label></div><label class="field"><span>Auswahlwerte (bei Auswahlfeldern)</span><input data-property="options" value="${esc(item.options.join(", "))}" maxlength="1000" placeholder="Zum Beispiel: Büro, Saal, Außenbereich"><span class="help">Mehrere Werte durch Kommas trennen.</span></label><label class="check"><input data-property="required" type="checkbox" ${item.required ? "checked" : ""}>Pflichtfeld</label><button class="btn ghost" data-remove-field type="button">Feld entfernen</button></div>`;
 }
 let currentGuideEditor = null;
+let currentFieldSorter = null;
 function guideImageRow(image) {
   return `<div class="field-row guide-image-editor" data-guide-image="${esc(image.id)}"><img src="${esc(guideImageSource(image.src))}" alt="Vorschau des Anleitungsbildes"><label class="field"><span>Bildbeschreibung für die Barrierefreiheit *</span><input data-image-property="alt" value="${esc(image.alt)}" required maxlength="300"></label><label class="field"><span>Bildunterschrift (optional)</span><input data-image-property="caption" value="${esc(image.caption)}" maxlength="300"></label><div class="actions"><button class="btn secondary" data-insert-image type="button">An Textposition einfügen</button><button class="btn ghost" data-remove-image type="button">Bild löschen</button></div></div>`;
 }
@@ -1463,7 +1466,7 @@ function renderFormEditor(id) {
         ],
         isGuide(draft) ? "guide" : "form",
       )}</select>`,
-    )}${field("Bereich *", "form-area", `<select id="form-area" required>${options(areas, draft.area)}</select>`)}<fieldset><legend>Kategorien</legend><div id="form-categories"></div></fieldset>${field("Suchbegriffe", "form-keywords", input("form-keywords", draft.keywords), "Zum Beispiel: WLAN, Internet, Verbindung")}<fieldset id="form-settings"><legend>Formular</legend><p class="small muted">Name, E-Mail-Adresse, Betreff und Nachricht sind immer enthalten.</p><div id="field-editor">${draft.fields.map(fieldRow).join("")}</div><button class="btn secondary" id="add-field" type="button">${icon("plus")} Feld hinzufügen</button><label class="check"><input id="form-upload" type="checkbox" ${draft.upload ? "checked" : ""}>Dateiupload anbieten (3 Dateien, zusammen maximal 10 MB)</label></fieldset><fieldset id="guide-settings"><legend>Anleitung</legend>${guideEditorMarkup()}<p class="small muted">Bis zu fünf Bilder mit je maximal 5 MB. JPG, PNG oder WebP. Bilder bleiben in dieser Vorschau nur bis zum Neuladen erhalten.</p><label class="field"><span>Bilder hinzufügen</span><input id="guide-image-files" type="file" multiple accept="image/jpeg,image/png,image/webp"></label><div class="error" id="guide-image-error" role="alert"></div><div id="guide-images"></div><p class="small muted">Am Ende steht immer ein Kontaktformular mit eigener E-Mail-Adresse, Betreff und Nachricht.</p></fieldset><label class="check"><input id="form-published" type="checkbox" ${draft.published ? "checked" : ""}>Anliegen veröffentlichen</label><div class="error" id="editor-error" role="alert"></div><div class="actions"><button class="btn" type="submit">In Vorschau speichern</button><button class="btn secondary" type="submit" data-preview="true">Speichern und ansehen</button><a href="#admin/forms">Abbrechen</a></div></form>`,
+    )}${field("Bereich *", "form-area", `<select id="form-area" required>${options(areas, draft.area)}</select>`)}<fieldset><legend>Kategorien</legend><div id="form-categories"></div></fieldset>${field("Suchbegriffe", "form-keywords", input("form-keywords", draft.keywords), "Zum Beispiel: WLAN, Internet, Verbindung")}<fieldset id="form-settings"><legend>Formular</legend><p class="small muted">Name, E-Mail-Adresse, Betreff und Nachricht sind immer enthalten.</p><p id="field-order-help" class="help">Felder am Griff ziehen oder mit den Pfeilen verschieben. Die Reihenfolge wird beim Speichern übernommen.</p><div id="field-editor">${draft.fields.map(fieldRow).join("")}</div><p id="field-order-status" class="sr-only" role="status" aria-live="polite"></p><button class="btn secondary" id="add-field" type="button">${icon("plus")} Feld hinzufügen</button><label class="check"><input id="form-upload" type="checkbox" ${draft.upload ? "checked" : ""}>Dateiupload anbieten (3 Dateien, zusammen maximal 10 MB)</label></fieldset><fieldset id="guide-settings"><legend>Anleitung</legend>${guideEditorMarkup()}<p class="small muted">Bis zu fünf Bilder mit je maximal 5 MB. JPG, PNG oder WebP. Bilder bleiben in dieser Vorschau nur bis zum Neuladen erhalten.</p><label class="field"><span>Bilder hinzufügen</span><input id="guide-image-files" type="file" multiple accept="image/jpeg,image/png,image/webp"></label><div class="error" id="guide-image-error" role="alert"></div><div id="guide-images"></div><p class="small muted">Am Ende steht immer ein Kontaktformular mit eigener E-Mail-Adresse, Betreff und Nachricht.</p></fieldset><label class="check"><input id="form-published" type="checkbox" ${draft.published ? "checked" : ""}>Anliegen veröffentlichen</label><div class="error" id="editor-error" role="alert"></div><div class="actions"><button class="btn" type="submit">In Vorschau speichern</button><button class="btn secondary" type="submit" data-preview="true">Speichern und ansehen</button><a href="#admin/forms">Abbrechen</a></div></form>`,
   );
   const editor = $("form-editor");
   const richGuide = window.GuideEditor.create({
@@ -1516,13 +1519,8 @@ function renderFormEditor(id) {
   };
   renderCategories(draft.categories);
   $("form-area").addEventListener("change", () => renderCategories([]));
-  const bindFields = () =>
-    editor
-      .querySelectorAll("[data-remove-field]")
-      .forEach(
-        (button) =>
-          (button.onclick = () => button.closest("[data-field-row]").remove()),
-      );
+  currentFieldSorter = window.FieldSorter.setup($("field-editor"), $("field-order-status"));
+  const bindFields = () => currentFieldSorter.refresh();
   bindFields();
   $("add-field").addEventListener("click", () => {
     $("field-editor").insertAdjacentHTML(
@@ -1701,6 +1699,8 @@ function renderMissing() {
 }
 function renderPage(route, force = false) {
   if (pageRoute === route && !force) return;
+  currentFieldSorter?.destroy();
+  currentFieldSorter = null;
   currentGuideEditor?.destroy();
   currentGuideEditor = null;
   pageRoute = route;
