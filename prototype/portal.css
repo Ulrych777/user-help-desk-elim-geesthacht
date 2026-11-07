@@ -19,6 +19,10 @@
   --muted: #3f4b5a;
   --blue: #00458f;
   --accent-orange: #f49a43;
+  --tag-orange-bg: #fbe1c2;
+  --tag-orange-ink: #85420f;
+  --tag-blue-bg: #e7edf3;
+  --tag-blue-ink: #355773;
   --deep: #0b2540;
   --bg: #eae5dd;
   --line: #d7dce0;
@@ -627,20 +631,21 @@ main[data-view="home"] {
   display: inline-block;
   padding: 3px 8px;
   border-radius: 6px;
-  color: #355773;
-  background: #e7edf3;
+  color: var(--tag-blue-ink);
+  background: var(--tag-blue-bg);
   font-size: var(--text-small);
   font-weight: 600;
   margin-bottom: 8px;
 }
 .tag.guide,
+.page-heading.dark .tag.guide,
 .status {
-  background: #e6efe8;
-  color: #32634f;
+  background: var(--tag-orange-bg);
+  color: var(--tag-orange-ink);
 }
 .status.off {
-  background: #f1ece4;
-  color: #6b5b43;
+  background: var(--tag-blue-bg);
+  color: var(--tag-blue-ink);
 }
 .panel,
 .manage-card {

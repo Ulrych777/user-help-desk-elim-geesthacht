@@ -1,5 +1,7 @@
 # Gestaltung des Elim Kirche Serviceportals
 
+Die Kennzeichnungen „Anleitung“, „Veröffentlicht“ und „Aktiv“ verwenden eine hellorange Fläche mit dunkler orangebrauner Schrift. „Entwurf“ und „Inaktiv“ verwenden dieselben blauen Farben wie „Formular“. Das gilt für Anliegen, Bereiche und Administratorkonten; der Anleitungstag ist auch in der dunkelblauen Kopfkachel orange.
+
 Der orangefarbene Akzent aus den Illustrationen erscheint als kurze, 3 px hohe Linie unter den Titeln der dunkelblauen Bereichsbanner und Kopfkacheln für Formulare, Anleitungen und Verwaltung. Die Linie ist rein dekorativ. Schaltflächen verwenden wieder die bisherigen dunkelblauen und cremefarbenen Varianten.
 
 Leere Suchergebnisse erhalten eine freundliche Lupe mit leeren Karten und Pflanze im bestehenden 3D-Stil. Das transparente WebP-Motiv ist lokal eingebettet; es lädt keine externen Ressourcen. „Auf Spurensuche“ ergänzt den klaren Hinweis auf fehlende Treffer, und „Suche zurücksetzen“ leert Suchbegriff und gegebenenfalls Kategorie. Verweise auf allgemeine Anfragen bleiben entfernt. Bereiche ohne veröffentlichte Anliegen zeigen stattdessen „Hier ist noch Platz für Neues“ und führen zur Bereichsübersicht, damit ein leerer Bereich nicht als fehlerhafte Suche erscheint. Auf schmalen Bildschirmen stehen Illustration und Text untereinander.
