@@ -1,6 +1,7 @@
 # Beta-Übergabe
 
-Stand: 7. November 2026. Der Benutzer betrachtet die Beta funktional als fertig.
+Beta-Abnahme: 7. November 2026. Ergänzendes Tester-Feintuning: 9. November 2026.
+Der Benutzer betrachtet die Beta funktional als fertig.
 Aktive URL: https://serviceportal.glennritter.de, Verwaltung unter `/admin/`.
 
 ## Vorhandener Stand
@@ -48,7 +49,7 @@ npm run check:beta
 Enthalten sind Build, TypeScript, Wrangler-Trockenlauf, Tests der echten
 Worker-Implementierung mit SQLite und Test-JWTs, Admin-/Formular-Browsertests,
 simulierter Mailversand, Offline-Oberfläche bei mehreren Bildschirmgrößen und
-Quellcode-Sicherung samt Wiederherstellung. Die Tests senden keine echten E-Mails.
+Layout-/Typografieprüfungen von 320 bis 1920 px sowie Quellcode-Sicherung samt Wiederherstellung. Die Tests senden keine echten E-Mails.
 Vor `test:backup` neue Dateien mit `git add` aufnehmen, damit sie versioniert sind.
 
 Das Deployment erfolgt nach sauberem Commit und Push mit `npm run deploy:preview`.

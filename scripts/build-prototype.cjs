@@ -25,6 +25,9 @@ const images = Object.fromEntries(
   ]),
 );
 const replacements = {
+  FONTS_CSS: [400, 500, 600, 700].map(weight =>
+    `@font-face { font-family: "Raleway"; font-style: normal; font-weight: ${weight}; font-display: swap; src: url("data:font/woff2;base64,${fs.readFileSync(path.join(prototype, "fonts", `raleway-latin-${weight}-normal.woff2`)).toString("base64")}") format("woff2"); }`
+  ).join("\n"),
   // Use the original square signet at the left of the wordmark unchanged.
   FAVICON: "data:image/svg+xml;base64," + Buffer.from(
     '<svg xmlns="http://www.w3.org/2000/svg" width="224" height="224" viewBox="0 0 224 224">' +
@@ -48,7 +51,7 @@ const template = fs.readFileSync(
   "utf8",
 );
 const result = template.replace(
-  /\{\{(FAVICON|PORTAL_CSS|CONTROL_CSS|PORTAL_JS|IMAGES)\}\}/g,
+  /\{\{(FAVICON|FONTS_CSS|PORTAL_CSS|CONTROL_CSS|PORTAL_JS|IMAGES)\}\}/g,
   (_, key) => replacements[key],
 );
 fs.writeFileSync(path.join(prototype, "index.html"), result);

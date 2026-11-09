@@ -104,6 +104,7 @@ veröffentlicht. Ein GitHub-Push allein löst kein Deployment aus.
     npm run test:portal
     npm run test:mail
     node scripts/check-prototype.cjs
+    npm run test:design
     git add <bearbeitete-Dateien>
     git commit -m "Änderung beschreiben"
     git push origin main
@@ -135,6 +136,11 @@ Weitere Informationen: [Administration](docs/ADMINISTRATION.md),
 [Gestaltung](docs/GESTALTUNG-UND-TEXTE.md),
 [Projektplan](docs/PROJEKTPLAN.md), [historische Rekonstruktion](docs/WIEDERHERSTELLUNG.md),
 [Bildherkunft](prototype/assets/README.md).
+
+Raleway ist lokal in vier Schnitten eingebettet; der Marken-Zusatz „Serviceportal“
+behält seine Systemschrift. Herkunft und Lizenz: [Schriften](prototype/fonts/README.md).
+`npm run test:design` prüft Typografie, gemeinsame Seitenlinien und das responsive
+Raster von 320 bis 1920 px ohne externe Schriftanfragen.
 
 Die vollständige Beta-Prüfung lässt sich mit `npm run check:beta` ausführen.
 `npm run backup:source` sichert die versionierten Arbeitsdateien einschließlich

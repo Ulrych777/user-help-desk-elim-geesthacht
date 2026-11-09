@@ -18,6 +18,10 @@ with tempfile.TemporaryDirectory(prefix="portal-source-backup-") as directory:
             "prototype/index.html", "prototype/date-picker.js", "seeds/portal.json",
             "migrations/0001_initial_schema.sql", "migrations/0005_mail_template_version.sql",
             "docs/MIGRATION-UND-VEROEFFENTLICHUNG.md",
+            "prototype/fonts/raleway-latin-400-normal.woff2",
+            "prototype/fonts/raleway-latin-500-normal.woff2",
+            "prototype/fonts/raleway-latin-600-normal.woff2",
+            "prototype/fonts/raleway-latin-700-normal.woff2", "prototype/fonts/OFL.txt",
         }
         assert expected <= names, f"Fehlende Projektdateien: {expected - names}"
         assert not any(part in {".git", "node_modules", ".wrangler", "backups"} for name in names for part in Path(name).parts)

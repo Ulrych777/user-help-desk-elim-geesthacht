@@ -1,5 +1,8 @@
 :root {
-  --font-ui: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-ui: "Raleway", sans-serif;
+  --font-brand: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --page-gutter: 48px;
+  --page-width: 1440px;
   --text-small: 0.875rem;
   --text-body: 1rem;
   --text-lead: 1.25rem;
@@ -10,8 +13,8 @@
   --text-hero-mobile: clamp(1.75rem, 7.8vw, 2.5rem);
   --text-brand: 2rem;
   --text-brand-footer: 1.125rem;
-  --line-body: 1.6;
-  --line-heading: 1.3;
+  --line-body: 1.5;
+  --line-heading: 1.2;
   --radius-control: 12px;
   --radius-card: 18px;
   --line-warm: #d9cebe;
@@ -48,6 +51,7 @@ body {
   min-height: 100dvh;
   margin: 0;
   font-family: var(--font-ui);
+  letter-spacing: 0;
   font-size: var(--text-body);
   line-height: var(--line-body);
   color: var(--ink);
@@ -85,8 +89,10 @@ main:focus,
   outline: none;
 }
 .wrap {
-  width: min(1160px, calc(100% - 48px));
-  margin: 0 auto;
+  width: 100%;
+  max-width: var(--page-width);
+  padding-inline: var(--page-gutter);
+  margin-inline: auto;
 }
 .skip {
   position: absolute;
@@ -117,10 +123,6 @@ header {
   background: white;
   border-bottom: 1px solid var(--line);
 }
-.header-inner,
-.footer-inner {
-  width: min(1600px, calc(100% - 96px));
-}
 .header-inner {
   min-height: 96px;
   display: flex;
@@ -137,7 +139,7 @@ header {
 .brand-logo {
   display: block;
   width: auto;
-  height: 64px;
+  height: 35px;
   object-fit: contain;
   flex: none;
 }
@@ -148,6 +150,7 @@ header {
   background: #9aabbc;
 }
 .brand-title {
+  font-family: var(--font-brand);
   color: #07345a;
   font-size: var(--text-brand);
   font-weight: 600;
@@ -168,14 +171,14 @@ p {
 h1 {
   font-size: var(--text-page);
   line-height: 1.2;
-  letter-spacing: -0.025em;
+  letter-spacing: 0;
   font-weight: 700;
   margin-bottom: 16px;
 }
 h2 {
   font-size: var(--text-card);
-  line-height: 1.3;
-  letter-spacing: -0.025em;
+  line-height: 1.2;
+  letter-spacing: 0;
   margin-bottom: 10px;
 }
 h3 {
@@ -199,7 +202,6 @@ h3 {
 .eyebrow {
   font-size: var(--text-small);
   font-weight: 700;
-  letter-spacing: 0.12em;
   text-transform: uppercase;
   margin-bottom: 12px;
 }
@@ -276,11 +278,15 @@ h3 {
 }
 main[data-view="home"] {
   width: 100%;
+  max-width: none;
+  padding-inline: 0;
+  container-type: inline-size;
 }
 .home-layout {
+  --home-column: calc(max(0px, (100cqw - var(--page-width)) / 2) + clamp(400px, calc(58.333333cqw - 300px), 540px));
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 45.6fr) minmax(0, 54.4fr);
+  grid-template-columns: var(--home-column) minmax(0, 1fr);
   align-items: start;
   min-height: calc(100dvh - 170px);
 }
@@ -288,7 +294,7 @@ main[data-view="home"] {
   content: "";
   position: absolute;
   inset: 0 auto 0 0;
-  width: 45.6%;
+  width: var(--home-column);
   background: var(--deep);
   border-radius: 0 28px 0 0;
   pointer-events: none;
@@ -309,7 +315,7 @@ main[data-view="home"] {
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 68px clamp(28px, 3vw, 44px) 0 clamp(32px, 4.6vw, 72px);
+  padding: 68px 28px 0 max(var(--page-gutter), calc((100cqw - var(--page-width)) / 2 + var(--page-gutter)));
   background:
     radial-gradient(ellipse at top right, #34526c, transparent 72%), var(--deep);
   border-radius: 0 28px 0 0;
@@ -322,9 +328,8 @@ main[data-view="home"] {
 }
 .home-search-panel h1 {
   font-size: var(--text-hero);
-  line-height: 1.04;
+  line-height: 1.2;
   font-weight: 700;
-  letter-spacing: -0.045em;
   margin-bottom: 24px;
 }
 .home-search-panel p {
@@ -387,7 +392,7 @@ main[data-view="home"] {
   isolation: isolate;
   min-width: 0;
   min-height: 100%;
-  padding: 56px 38px 30px;
+  padding: 56px max(var(--page-gutter), calc((100cqw - var(--page-width)) / 2 + var(--page-gutter))) 30px 24px;
 }
 .home-content::before {
   content: "";
@@ -416,8 +421,7 @@ main[data-view="home"] {
 }
 .home-content .section-heading h2 {
   font-size: var(--text-page);
-  line-height: 1.12;
-  letter-spacing: -0.04em;
+  line-height: 1.2;
   margin-bottom: 0;
 }
 .home-content .section-heading {
@@ -430,6 +434,7 @@ main[data-view="home"] {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 22px;
+  grid-auto-rows: 1fr;
 }
 .area-card {
   position: relative;
@@ -489,18 +494,16 @@ main[data-view="home"] {
 .area-card h3 {
   font-size: var(--text-card);
   font-weight: 700;
-  line-height: 1.12;
-  letter-spacing: -0.04em;
+  line-height: 1.2;
   margin-bottom: 8px;
-  overflow-wrap: anywhere;
+  overflow-wrap: normal;
 }
 .area-card p {
   font-size: var(--text-body);
-  line-height: 1.3;
-  letter-spacing: -0.015em;
+  line-height: 1.5;
   color: var(--muted);
   margin: 0;
-  overflow-wrap: anywhere;
+  overflow-wrap: normal;
 }
 .area-art {
   display: block;
@@ -610,7 +613,7 @@ main[data-view="home"] {
 }
 .request-card h3 {
   font-size: var(--text-section);
-  letter-spacing: -0.025em;
+  letter-spacing: 0;
   overflow-wrap: anywhere;
 }
 .request-card p {
@@ -1161,7 +1164,7 @@ main[data-view="home"] ~ footer {
   justify-content: space-between;
   gap: 20px;
   min-height: 74px;
-  padding: 12px 0;
+  padding-block: 12px;
   font-size: var(--text-body);
   font-weight: 600;
 }
@@ -1169,7 +1172,7 @@ main[data-view="home"] ~ footer {
   gap: 10px;
 }
 .footer-brand .brand-logo {
-  height: 30px;
+  height: 20px;
 }
 .footer-brand .brand-divider {
   height: 22px;
@@ -1218,15 +1221,15 @@ main[data-view="home"] ~ footer {
     height: max(930px, 100dvh);
   }
 }
-@media (max-width: 1099px) {
+@media (max-width: 1199px) {
   main[data-view="home"] {
-    width: calc(100% - 48px);
+    width: 100%;
   }
   .home-layout {
     grid-template-columns: minmax(0, 1fr);
     gap: 32px;
     min-height: 0;
-    margin: 32px 0 48px;
+    margin: 32px calc(var(--page-gutter) / 2) 48px;
   }
   .home-layout::before {
     display: none;
@@ -1238,7 +1241,7 @@ main[data-view="home"] ~ footer {
   }
   .home-search-surface {
     height: auto;
-    padding: 30px;
+    padding: 30px calc(var(--page-gutter) / 2);
     border-radius: 24px;
   }
   .home-service-art {
@@ -1246,7 +1249,7 @@ main[data-view="home"] ~ footer {
   }
   .home-content {
     min-height: 0;
-    padding: 0;
+    padding: 0 calc(var(--page-gutter) / 2);
   }
   .home-content::before {
     display: none;
@@ -1280,14 +1283,13 @@ main[data-view="home"] ~ footer {
   }
 }
 @media (max-width: 767px) {
+  :root { --page-gutter: 24px; }
   .areas {
     grid-template-columns: minmax(0, 1fr);
   }
 }
 @media (min-width: 621px) and (max-width: 900px) {
-  header .brand-logo {
-    height: 52px;
-  }
+
   header .brand-divider {
     height: 36px;
   }
@@ -1296,12 +1298,7 @@ main[data-view="home"] ~ footer {
   }
 }
 @media (max-width: 620px) {
-  .wrap,
-  .header-inner,
-  .footer-inner,
-  main[data-view="home"] {
-    width: calc(100% - 32px);
-  }
+
   .header-inner {
     min-height: 84px;
   }
@@ -1309,7 +1306,7 @@ main[data-view="home"] ~ footer {
     gap: 8px;
   }
   header .brand-logo {
-    height: clamp(28px, 8.3vw, 44px);
+    height: clamp(30px, 9.333vw, 35px);
   }
   header .brand-divider {
     height: 30px;
@@ -1322,7 +1319,7 @@ main[data-view="home"] ~ footer {
     gap: 30px;
   }
   .home-search-surface {
-    padding: 26px 22px;
+    padding: 26px calc(var(--page-gutter) / 2);
     border-radius: 18px;
   }
   .home-search-panel h1 {
@@ -1353,7 +1350,7 @@ main[data-view="home"] ~ footer {
     min-height: 340px;
   }
   .area-card h3 {
-    font-size: var(--text-card);
+    font-size: clamp(20px, 6.4vw, 24px);
   }
   .area-card p {
     font-size: var(--text-body);
@@ -1573,4 +1570,12 @@ main[data-view="home"] ~ footer {
   .guide-toolbar { padding: 8px; }
   #guide-settings { padding: 0; border: 0; background: transparent; }
   #guide-settings > legend { padding: 0; margin-bottom: 16px; }
+}
+
+@media (min-width: 1200px) {
+  .areas { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .home-search-panel h1 { font-size: 36px; }
+  .area-card { padding: 16px; min-height: 0; }
+  .area-card h3 { font-size: 20px; }
+  .area-art { width: calc(100% + 32px); margin: -16px -16px 6px; }
 }

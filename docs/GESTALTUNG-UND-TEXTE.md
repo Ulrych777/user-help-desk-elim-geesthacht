@@ -1,5 +1,7 @@
 # Gestaltung des Elim Kirche Serviceportals
 
+Feintuning vom 9. November 2026: Die gemeinsame Seitenbreite beträgt maximal 1440 px einschließlich je 48 px Innenrand, unter 768 px je 24 px. Header, Footer, Startseiteninhalt und Bereichsseiten folgen denselben Linien. Die linke Startseitenfläche bleibt bis zum Fensterrand durchgehend dunkel. Für lesbare Kacheln wächst die Suchspalte zwischen 1200 und 1440 px von 400 auf 540 px und erhält auf breiteren Fenstern zusätzlich den äußeren Rand. Die drei Desktop-Kacheln verwenden 16 px Innenabstand. Alle Bereichskarten sind gleich hoch; Wörter werden nicht beliebig getrennt. Negative Laufweite entfällt außer beim unveränderten Marken-Zusatz. Überschriften haben Zeilenhöhe 1,2, Fließtext 1,5. Logos sind oben 35 px, unten 20 px hoch (nur bei sehr schmalen Fenstern oben bis 30 px). Raleway 400/500/600/700 ist lokal eingebettet; Herkunft und Lizenz stehen in prototype/fonts/README.md.
+
 Der Footer zeigt nur Marke und Adminzugang. Der Testbetriebshinweis entfällt. „Admin-Bereich“ ist als cremefarbene Schaltfläche mit dunkelblauer Schrift, denselben weichen Innenkanten wie die Karten und einem kleinen Schloss auf hellorangefarbener Fläche gestaltet; alle anderen Schaltflächen behalten ihre bisherigen Farben.
 
 Formulare und Anleitungskontaktformulare haben ober- und unterhalb der Cloudflare-Prüfung 24 px Abstand. Datumsfelder behalten ihre native Eingabe und ISO-Werte; die Kalenderauswahl verwendet die Creme-Blau-Flächen und weichen Kartenränder des Portals. Gewählte Tage sind dunkelblau, heute ist orange umrandet. Pfeiltasten, Pos1/Ende, Bild auf/ab, Monatswechsel, Heute, Löschen und Escape werden unterstützt; Escape schließt zuerst nur den Kalender.
@@ -16,7 +18,7 @@ Die großen Karten verwenden jetzt dieselben kissenförmigen Innenkanten wie die
 
 Im Bereichseditor wird das Motiv ausschließlich unter „Bereichsbild“ hochgeladen, ersetzt, entfernt und in der Vorschau kontrolliert. Die unabhängige Symbolauswahl entfällt. Bestehende Bilder bleiben erhalten und werden weiterhin für Startseitenkachel und Bereichsbanner verwendet.
 
-Am 7. November 2026 wurden Typografie und Formulargestaltung vereinheitlicht: Eine gemeinsame Systemschrift gilt für Navigation, Inhalte, Eingaben und Schaltflächen. Zentrale CSS-Variablen legen 14 px für Beschriftungen und Hilfetexte, 16 px für Fließtext und Eingaben, 20 px für Abschnittstitel, 24 px für Kartentitel und 28–36 px für Seitentitel fest. Die große Einstiegsfrage auf der Startseite behält ihre hervorgehobene Größe. Abstände und Rundungen folgen gemeinsamen Vorgaben; die Schriftgrößen skalieren mit der Browser-Grundeinstellung.
+Am 7. November 2026 wurden Typografie und Formulargestaltung vereinheitlicht: Seit dem Feintuning vom 9. November 2026 gilt lokal eingebundene Raleway für Navigation, Inhalte, Eingaben und Schaltflächen; der Schriftzug „Serviceportal“ bleibt bei seiner bisherigen Systemschrift. Zentrale CSS-Variablen legen 14 px für Beschriftungen und Hilfetexte, 16 px für Fließtext und Eingaben, 20 px für Abschnittstitel, 24 px für Kartentitel und 28–36 px für Seitentitel fest. Die Einstiegsfrage verwendet ab 1200 px 36 px, Bereichskartentitel 20 px. Abstände und Rundungen folgen gemeinsamen Vorgaben; die Schriftgrößen skalieren mit der Browser-Grundeinstellung.
 
 Die Kontaktkachel nutzt zwei gleich große Textabsätze ohne wiederholten Antwort-Hinweis. Der Anmeldestatus in der Verwaltung erscheint als helle Karte mit dunkelblauem Text, Kontoadresse und Abmelde-Schaltfläche. Gelbe Warnfarben bleiben damit aus dem normalen Anmeldestatus entfernt. Startseite, Bereiche, Formulare, Anleitungen und Verwaltung verwenden dieselben Textrollen.
 
@@ -28,7 +30,7 @@ Die mitlaufende Suchfläche ist mindestens so hoch wie das Browserfenster. Dadur
 
 Rechts stehen „Unsere Bereiche“ und die warmen, leicht gewölbten Kacheln. Die Bilder zeigen einen Monitor mit leerem Bildschirm, ein schlichtes Haus und einen Rechner mit Dokument. Ihre transparenten Hintergründe fügen sich in die Kartenfläche ein. Eine weich unscharfe Pflanze liegt rechts unten als angeschnittene Dekoration hinter den Kacheln. Sie erhält den Raum bis zum Footer und erscheint auf schmalen Bildschirmen nicht.
 
-Auf dem Desktop stehen zwei Bereichskacheln nebeneinander, auf dem Smartphone untereinander. Das Suchfeld bleibt auf schmalen oder sehr flachen Bildschirmen im normalen Seitenfluss. Weitere Bereiche lassen die Übersicht nach unten wachsen.
+Ab 1200 px stehen drei Bereichskacheln nebeneinander, auf dem Tablet zwei und unter 768 px eine. Das Suchfeld bleibt auf schmalen oder sehr flachen Bildschirmen im normalen Seitenfluss. Weitere Bereiche lassen die Übersicht nach unten wachsen.
 
 Die nach dem ursprünglichen Mockup ausdrücklich beschlossenen Anpassungen bleiben erhalten: unveränderte originale Wort-Bild-Marke mit Trennlinie und Zusatz „Serviceportal“ in Header und Footer, „Admin-Bereich“ ohne Unterstreichung im Footer und kein zusätzlicher Text „Anliegen ansehen“ innerhalb der vollständig anklickbaren Bereichskacheln.
 

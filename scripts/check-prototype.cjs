@@ -95,7 +95,7 @@ const fs = require("node:fs"),
         .evaluate(
           (el) => getComputedStyle(el).gridTemplateColumns.split(" ").length,
         ),
-      2,
+      3,
     );
     const logo = await page.locator("header .brand-logo").getAttribute("src");
     assert.equal(
@@ -619,6 +619,12 @@ const fs = require("node:fs"),
     await visit("home");
     await pictures();
     assert.equal(await page.locator(".area-card").count(), 8);
+    // Three desktop columns need more rows to exercise a genuinely long sticky page.
+    // Keep the persisted eight-area fixture; these extra cards disappear on reload.
+    await page.evaluate(() => {
+      for (let i = 0; i < 10; i++) areas.push({ ...structuredClone(areas[0]), id: `scroll-fixture-${i}` });
+      renderHome();
+    });
     // The curved search surface must track the header until it reaches the
     // viewport edge; a gap here exposes a second dark top edge behind the card.
     for (const scroll of [0, 40, 80, 120]) {
