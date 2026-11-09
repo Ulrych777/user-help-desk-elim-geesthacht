@@ -13,7 +13,7 @@ catch { ({chromium} = require('/opt/codex/runtimes/codex-primary-runtime/depende
     const page = await browser.newPage();
     const external = [];
     page.on('request', request => { if (/^https?:/.test(request.url()) && new URL(request.url()).hostname !== '127.0.0.1') external.push(request.url()); });
-    for (const width of [1920,1440,1200,1199,1024,768,375,320]) {
+    for (const width of [2560,1920,1854,1440,1200,1199,1024,768,375,320]) {
       await page.setViewportSize({width,height:1000});
       await page.goto(`http://127.0.0.1:${server.address().port}/#home`);
       await page.reload();
@@ -48,6 +48,9 @@ catch { ({chromium} = require('/opt/codex/runtimes/codex-primary-runtime/depende
           titleLines:box('#home-title').height / parseFloat(getComputedStyle(document.querySelector('#home-title')).lineHeight),
           backdrop:parseFloat(getComputedStyle(document.querySelector('.home-layout'),'::before').width),
           panel:box('.home-search-panel').width,
+          panelLeft:box('.home-search-panel').left,
+          artLeft:box('.home-service-art').left,
+          artRight:box('.home-service-art').right,
           badTracking:[...document.querySelectorAll('h1,h2,h3,p,label,button,input,a')].filter(e=>parseFloat(getComputedStyle(e).letterSpacing)<0 && !e.classList.contains('brand-title')).length,
           overflow:document.documentElement.scrollWidth > innerWidth,
           splitWords,
@@ -56,6 +59,7 @@ catch { ({chromium} = require('/opt/codex/runtimes/codex-primary-runtime/depende
       });
       assert.equal(report.columns,width>=1200?3:width>=768?2:1,`${width}: Spalten`);
       for (const value of [report.copyLeft,report.footerLeft]) assert(Math.abs(value-report.left)<1,`${width}: gemeinsame linke Linie`);
+      assert(Math.abs(report.left-(width<768?24:48))<1,`${width}: kein zusätzlicher zentrierter Außenrand`);
       assert(Math.abs(report.cardsRight-report.right)<1,`${width}: gemeinsame rechte Linie`);
       assert.equal(report.footerLogo,20);
       if(width>=375) assert(Math.abs(report.logo-35)<.1);
@@ -68,6 +72,8 @@ catch { ({chromium} = require('/opt/codex/runtimes/codex-primary-runtime/depende
       if(width>=1200) {
         assert(Math.abs(report.titleLines-2)<.1,`${width}: zweizeilige Einstiegsfrage`);
         assert(Math.abs(report.backdrop-report.panel)<1,`${width}: Hintergrund endet an Spaltengrenze`);
+        assert(Math.abs(report.artLeft-report.panelLeft)<1 && Math.abs(report.artRight-report.panelLeft-report.panel)<1,
+          `${width}: Suchbild füllt die Spalte ohne seitliche blaue Streifen`);
       }
       await page.screenshot({path:`/tmp/serviceportal-finetuning-${width}.png`,fullPage:true});
       await page.goto(`http://127.0.0.1:${server.address().port}/#area/it`);

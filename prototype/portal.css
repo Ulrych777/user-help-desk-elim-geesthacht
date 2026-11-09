@@ -2,7 +2,6 @@
   --font-ui: "Raleway", sans-serif;
   --font-brand: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --page-gutter: 48px;
-  --page-width: 1440px;
   --text-small: 0.875rem;
   --text-body: 1rem;
   --text-lead: 1.25rem;
@@ -90,7 +89,7 @@ main:focus,
 }
 .wrap {
   width: 100%;
-  max-width: var(--page-width);
+  max-width: none;
   padding-inline: var(--page-gutter);
   margin-inline: auto;
 }
@@ -283,7 +282,7 @@ main[data-view="home"] {
   container-type: inline-size;
 }
 .home-layout {
-  --home-column: calc(max(0px, (100cqw - var(--page-width)) / 2) + clamp(400px, calc(58.333333cqw - 300px), 540px));
+  --home-column: clamp(400px, calc(58.333333cqw - 300px), 540px);
   position: relative;
   display: grid;
   grid-template-columns: var(--home-column) minmax(0, 1fr);
@@ -315,7 +314,7 @@ main[data-view="home"] {
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 68px 28px 0 max(var(--page-gutter), calc((100cqw - var(--page-width)) / 2 + var(--page-gutter)));
+  padding: 68px 28px 0 var(--page-gutter);
   background:
     radial-gradient(ellipse at top right, #34526c, transparent 72%), var(--deep);
   border-radius: 0 28px 0 0;
@@ -376,8 +375,7 @@ main[data-view="home"] {
 .home-service-art {
   flex: 1;
   min-height: 0;
-  margin: 0 calc(-1 * clamp(28px, 3vw, 44px)) 0
-    calc(-1 * clamp(32px, 4.6vw, 72px));
+  margin: 0 -28px 0 calc(-1 * var(--page-gutter));
   mask-image: linear-gradient(to bottom, transparent, #000 18%);
 }
 .home-service-art img {
@@ -392,7 +390,7 @@ main[data-view="home"] {
   isolation: isolate;
   min-width: 0;
   min-height: 100%;
-  padding: 56px max(var(--page-gutter), calc((100cqw - var(--page-width)) / 2 + var(--page-gutter))) 30px 24px;
+  padding: 56px var(--page-gutter) 30px 24px;
 }
 .home-content::before {
   content: "";

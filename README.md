@@ -140,7 +140,7 @@ Weitere Informationen: [Administration](docs/ADMINISTRATION.md),
 Raleway ist lokal in vier Schnitten eingebettet; der Marken-Zusatz „Serviceportal“
 behält seine Systemschrift. Herkunft und Lizenz: [Schriften](prototype/fonts/README.md).
 `npm run test:design` prüft Typografie, gemeinsame Seitenlinien und das responsive
-Raster von 320 bis 1920 px ohne externe Schriftanfragen.
+Raster von 320 bis 2560 px ohne externe Schriftanfragen.
 
 Die vollständige Beta-Prüfung lässt sich mit `npm run check:beta` ausführen.
 `npm run backup:source` sichert die versionierten Arbeitsdateien einschließlich
